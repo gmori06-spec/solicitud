@@ -523,16 +523,18 @@ function gv(id) {
 }
 
 function buildEmail(p) {
-  function row(l,v,b){return'<tr><td style="width:38%;padding:9px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #f3f4f6;vertical-align:top">'+l+'</td><td style="padding:9px 16px;font-size:13px;border-bottom:1px solid #f3f4f6'+(b?';font-weight:700;color:#111827':'')+'">'+( v||'—')+'</td></tr>';}
-  function sec(t){return'<tr><td colspan="2" style="padding:10px 16px;background:#f9fafb;font-size:11px;font-weight:700;color:#4f46e5;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #e5e7eb">'+t+'</td></tr>';}
-  var h='<!DOCTYPE html><html><body style="margin:0;padding:20px;background:#f0f4ff;font-family:Arial,sans-serif">';
-  h+='<table width="100%" cellpadding="0" cellspacing="0" style="max-width:660px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:white">';
-  h+='<tr><td style="background:#4f46e5;padding:20px 24px">';
-  h+='<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px">GC TELECOM S.A.C. · SOLICITUD DE SERVICIO</div>';
-  h+='<div style="font-size:22px;font-weight:800;color:white;letter-spacing:0.5px">'+p.ot+'</div>';
-  h+='<div style="margin-top:8px;display:flex;gap:8px;align-items:center">';
-  h+='<span style="background:rgba(255,255,255,0.2);color:white;font-size:12px;padding:3px 10px;border-radius:999px">'+p.fecha_creacion+' · '+p.hora_creacion+'</span>';
-  h+='<span style="background:#f97316;color:white;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px">'+p.prioridad+'</span>';
+  function row(l,v,b){return'<tr><td style="width:38%;padding:14px 24px;color:#4b5563;font-size:15px;border-bottom:1px solid #f1f3f5;vertical-align:top">'+l+'</td><td style="padding:14px 24px;font-size:16px;color:#1f2937;border-bottom:1px solid #f1f3f5'+(b?';font-weight:700;color:#111827':'')+'">'+( v||'—')+'</td></tr>';}
+  function sec(t){return'<tr><td colspan="2" style="padding:14px 24px;background:#f5f6ff;font-size:13px;font-weight:700;color:#4f46e5;text-transform:uppercase;letter-spacing:1.2px;border-top:1px solid #e8e9f5;border-bottom:1px solid #e8e9f5">'+t+'</td></tr>';}
+  var pc={'Crítico':'#dc2626','Critico':'#dc2626','Urgente':'#f97316','Normal':'#16a34a'};
+  var pcolor=pc[p.prioridad]||'#6b7280';
+  var h='<!DOCTYPE html><html><body style="margin:0;padding:24px;background:#eef1fb;font-family:-apple-system,Segoe UI,Arial,sans-serif">';
+  h+='<table width="100%" cellpadding="0" cellspacing="0" style="max-width:660px;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;background:white">';
+  h+='<tr><td style="background:#4f46e5;padding:32px 24px;text-align:center">';
+  h+='<div style="font-size:13px;color:rgba(255,255,255,0.78);margin-bottom:10px;letter-spacing:1.5px;text-transform:uppercase">GC TELECOM S.A.C. · Solicitud de Servicio</div>';
+  h+='<div style="font-size:36px;font-weight:800;color:#ffffff;letter-spacing:1px;line-height:1.1">'+p.ot+'</div>';
+  h+='<div style="margin-top:16px">';
+  h+='<span style="display:inline-block;background:rgba(255,255,255,0.22);color:#ffffff;font-size:14px;padding:7px 16px;border-radius:999px">'+p.fecha_creacion+' · '+p.hora_creacion+'</span>';
+  h+='<span style="display:inline-block;background:'+pcolor+';color:#ffffff;font-size:14px;font-weight:700;padding:7px 16px;border-radius:999px;margin-left:8px">'+p.prioridad+'</span>';
   h+='</div></td></tr>';
   h+='<tr><td><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">';
   h+=sec('Solicitud');
@@ -558,10 +560,10 @@ function buildEmail(p) {
   h+=row('Perfil',p.perfil,true);
   h+=row('N° operadores',String(p.operadores),false);
   h+=row('Técnico de preferencia',p.tecnico,false);
-  if(p.observaciones){h+=sec('Observaciones');h+='<tr><td colspan="2" style="padding:12px 16px;font-size:13px;color:#374151">'+p.observaciones+'</td></tr>';}
+  if(p.observaciones){h+=sec('Observaciones');h+='<tr><td colspan="2" style="padding:16px 24px;font-size:16px;line-height:1.5;color:#374151">'+p.observaciones+'</td></tr>';}
   h+='</table></td></tr>';
-  h+='<tr><td style="padding:14px 20px;background:#f9fafb;font-size:11px;color:#9ca3af;text-align:center;border-top:1px solid #f3f4f6">';
-  h+='Sistema de Operaciones · GC TELECOM S.A.C. · Estado: <strong>Programada</strong>';
+  h+='<tr><td style="padding:18px 24px;background:#f9fafb;font-size:12px;color:#9ca3af;text-align:center;border-top:1px solid #f1f3f5">';
+  h+='Sistema de Operaciones · GC TELECOM S.A.C. · Estado: <strong style="color:#4f46e5">Programada</strong>';
   h+='</td></tr></table></body></html>';
   return h;
 }
