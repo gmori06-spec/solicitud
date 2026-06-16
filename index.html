@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCT · Solicitud de Servicio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f4ff;
+  --card: #ffffff;
+  --primary: #4f46e5;
+  --primary-soft: #eef2ff;
+  --orange: #f97316;
+  --orange-soft: #fff7ed;
+  --red: #ef4444;
+  --red-soft: #fef2f2;
+  --green: #059669;
+  --green-soft: #ecfdf5;
+  --border: #e5e7f0;
+  --text: #111827;
+  --sub: #6b7280;
+  --muted: #9ca3af;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+  padding: 0 0 60px;
+}
+
+/* HEADER FIJO */
+.hdr {
+  background: var(--primary);
+  padding: 20px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 16px rgba(79,70,229,0.35);
+}
+.hdr-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.hdr-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+.ot-pill {
+  background: var(--orange);
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 9px 18px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* CONTENIDO */
+.wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
+
+/* SECTION */
+.sec {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.sec-hdr {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sec-num {
+  width: 30px; height: 30px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: 50%;
+  font-size: 14px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sec-name { font-size: 16px; font-weight: 700; color: var(--text); }
+.sec-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+/* CAMPO */
+.f { display: flex; flex-direction: column; gap: 7px; }
+.f-lbl { font-size: 12px; font-weight: 600; color: var(--sub); letter-spacing: 0.2px; }
+.f-lbl .req { color: var(--red); }
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text);
+  background: #fafbff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  background: white;
+}
+textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+select { cursor: pointer; }
+
+/* ROW */
+.r2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.r3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* PILLS */
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.po { display: none; }
+.pl {
+  padding: 8px 18px;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--sub);
+  background: #fafbff;
+  transition: all 0.15s;
+  user-select: none;
+  white-space: nowrap;
+}
+.pl:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+.po:checked + .pl { background: var(--primary); color: white; border-color: var(--primary); }
+.po.warn:checked + .pl { background: var(--orange); color: white; border-color: var(--orange); }
+.po.danger:checked + .pl { background: var(--red); color: white; border-color: var(--red); }
+
+/* COUNTER */
+.ctr { display: inline-flex; align-items: center; border: 2px solid var(--border); border-radius: 999px; overflow: hidden; }
+.cb {
+  width: 40px; height: 40px; border: none;
+  background: transparent; cursor: pointer;
+  font-size: 20px; font-weight: 700; color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s;
+}
+.cb:hover { background: var(--primary-soft); }
+.cn {
+  min-width: 44px; text-align: center;
+  font-size: 16px; font-weight: 800; color: var(--text);
+  border-left: 2px solid var(--border);
+  border-right: 2px solid var(--border);
+  height: 40px; line-height: 40px;
+}
+
+/* SUBMIT */
+.submit-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+.btn {
+  width: 100%;
+  padding: 15px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: all 0.15s;
+}
+.btn:hover { background: #4338ca; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(79,70,229,0.4); }
+.btn:active { transform: none; }
+.btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+.note {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 10px;
+}
+
+.toast {
+  display: none;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.4;
+}
+.tok { background: var(--green-soft); color: var(--green); display: block; }
+.terr { background: var(--red-soft); color: var(--red); display: block; }
+.tload { background: var(--primary-soft); color: var(--primary); display: block; }
+
+@media (max-width: 560px) {
+  .r2, .r3 { grid-template-columns: 1fr; }
+  .hdr-sub { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-title">Solicitud de Servicio Técnico</div>
+    <div class="ot-pill" id="otDisplay">generando…</div>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="wrap">
+
+  <!-- 1. SOLICITUD -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-num">1</div>
+      <div class="sec-name">¿Quién solicita y qué tipo de servicio?</div>
+    </div>
+    <div class="sec-body">
+      <div class="f">
+        <div class="f-lbl">Comercial <span class="req">*</span></div>
+        <div class="pills">
+          <input type="radio" class="po" name="comercial" id="co1" value="CRISTHIAN BENAVIDES"><label class="pl" for="co1">Cristhian Benavides</label>
+          <input type="radio" class="po" name="comercial" id="co2" value="HUMBERTO VEGA"><label class="pl" for="co2">Humberto Vega</label>
+          <input type="radio" class="po" name="comercial" id="co3" value="JOSUE PENA"><label class="pl" for="co3">Josue Peña</label>
+          <input type="radio" class="po" name="comercial" id="co4" value="PATRICIA GRANDEZ"><label class="pl" for="co4">Patricia Grandez</label>
+          <input type="radio" class="po" name="comercial" id="co5" value="MIGUEL LOZANO"><label class="pl" for="co5">Miguel Lozano</label>
+          <input type="radio" class="po" name="comercial" id="co6" value="OTRO" onclick="toggleOtroComercial(true)"><label class="pl" for="co6">Otro</label>
+        </div>
+        <input type="text" id="otro_comercial" placeholder="Escriba el nombre del comercial…" style="display:none;margin-top:8px">
+      </div>
+      <div class="f">
+        <div class="f-lbl">Tipo de servicio <span class="req">*</span></div>
+        <div class="pills">
+          <input type="radio" class="po" name="ts" id="ts1" value="Prueba Instalacion" checked><label class="pl" for="ts1">Prueba Instalación</label>
+          <input type="radio" class="po" name="ts" id="ts2" value="Mantenimiento"><label class="pl" for="ts2">Mantenimiento</label>
+          <input type="radio" class="po" name="ts" id="ts3" value="Desmontaje"><label class="pl" for="ts3">Desmontaje</label>
+          <input type="radio" class="po" name="ts" id="ts4" value="Medicion"><label class="pl" for="ts4">Medición</label>
+          <input type="radio" class="po danger" name="ts" id="ts5" value="Soporte"><label class="pl" for="ts5">Soporte</label>
+          <input type="radio" class="po" name="ts" id="ts6" value="Otro" onclick="toggleOtroTipo(true)"><label class="pl" for="ts6">Otro</label>
+        </div>
+        <input type="text" id="otro_tipo" placeholder="Especifique el tipo de servicio…" style="display:none;margin-top:8px">
+      </div>
+      <div class="f">
+        <div class="f-lbl">Prioridad</div>
+        <div class="pills">
+          <input type="radio" class="po" name="pr" id="pr1" value="Normal" checked><label class="pl" for="pr1">Normal</label>
+          <input type="radio" class="po warn" name="pr" id="pr2" value="Urgente"><label class="pl" for="pr2">⚡ Urgente</label>
+          <input type="radio" class="po danger" name="pr" id="pr3" value="Critico"><label class="pl" for="pr3">🔴 Crítico</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CLIENTE -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-num">2</div>
+      <div class="sec-name">¿Dónde y para quién?</div>
+    </div>
+    <div class="sec-body">
+      <div class="f">
+        <div class="f-lbl">Empresa / Cliente <span class="req">*</span></div>
+        <input type="text" id="cliente" placeholder="Nombre de la empresa o cliente">
+      </div>
+      <div class="r2">
+        <div class="f">
+          <div class="f-lbl">Contacto en sitio</div>
+          <input type="text" id="contacto" placeholder="Nombre">
+        </div>
+        <div class="f">
+          <div class="f-lbl">Celular</div>
+          <input type="text" id="celular" placeholder="9XXXXXXXX">
+        </div>
+      </div>
+      <div class="f">
+        <div class="f-lbl">Dirección <span class="req">*</span></div>
+        <input type="text" id="direccion" placeholder="Av./Jr./Calle, número, referencia">
+      </div>
+      <div class="f">
+        <div class="f-lbl">Distrito <span class="req">*</span></div>
+        <input type="text" id="distrito" placeholder="Ej: Miraflores">
+      </div>
+      <div class="r2">
+        <div class="f">
+          <div class="f-lbl">Acceso al lugar</div>
+          <div class="pills">
+            <input type="radio" class="po" name="acc" id="ac1" value="Confirmado"><label class="pl" for="ac1">Confirmado</label>
+            <input type="radio" class="po" name="acc" id="ac2" value="Pendiente"><label class="pl" for="ac2">Pendiente</label>
+          </div>
+        </div>
+        <div class="f">
+          <div class="f-lbl">Estacionamiento</div>
+          <div class="pills">
+            <input type="radio" class="po" name="est" id="es1" value="Confirmado"><label class="pl" for="es1">Confirmado</label>
+            <input type="radio" class="po" name="est" id="es2" value="Pendiente"><label class="pl" for="es2">Pendiente</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. TRABAJO -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-num">3</div>
+      <div class="sec-name">¿Qué trabajo se realizará?</div>
+    </div>
+    <div class="sec-body">
+      <div class="f">
+        <div class="f-lbl">Descripción del trabajo <span class="req">*</span></div>
+        <textarea id="descripcion" placeholder="Explique qué se va a hacer, en qué área, con qué alcance…"></textarea>
+      </div>
+      <div class="r2">
+        <div class="f">
+          <div class="f-lbl">Equipos</div>
+          <input type="text" id="equipo" placeholder="Ej: Extreme 220X">
+        </div>
+        <div class="f">
+          <div class="f-lbl">Materiales</div>
+          <input type="text" id="materiales" placeholder="Ej: Cable coaxial 10m">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. FECHA -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-num">4</div>
+      <div class="sec-name">¿Cuándo?</div>
+    </div>
+    <div class="sec-body">
+      <div class="r2">
+        <div class="f">
+          <div class="f-lbl">Fecha <span class="req">*</span></div>
+          <input type="date" id="fecha_programada">
+        </div>
+        <div class="f">
+          <div class="f-lbl">Hora de inicio</div>
+          <select id="hora_inicio">
+            <option value="">— Seleccionar —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. TÉCNICO -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-num">5</div>
+      <div class="sec-name">¿Qué equipo técnico necesita?</div>
+    </div>
+    <div class="sec-body">
+      <div class="f">
+        <div class="f-lbl">Perfil del técnico</div>
+        <div class="pills">
+          <input type="radio" class="po" name="pf" id="pf1" value="Señal Celular Interiores" checked><label class="pl" for="pf1">Señal Celular Interiores</label>
+          <input type="radio" class="po" name="pf" id="pf2" value="Señal Celular Exteriores"><label class="pl" for="pf2">Señal Celular Exteriores</label>
+          <input type="radio" class="po" name="pf" id="pf3" value="IT Redes"><label class="pl" for="pf3">IT Redes</label>
+          <input type="radio" class="po" name="pf" id="pf4" value="Otros" onclick="toggleOtrosPerfil(true)"><label class="pl" for="pf4">Otros</label>
+        </div>
+        <input type="text" id="otros_perfil" placeholder="Especifique la tecnología…" style="display:none;margin-top:8px">
+      </div>
+      <div class="r2">
+        <div class="f">
+          <div class="f-lbl">N° de operadores</div>
+          <div class="ctr">
+            <button type="button" class="cb" onclick="chg(-1)">−</button>
+            <div class="cn" id="opN">1</div>
+            <button type="button" class="cb" onclick="chg(1)">+</button>
+          </div>
+        </div>
+        <div class="f">
+          <div class="f-lbl">Técnico de preferencia</div>
+          <input type="text" id="tecnico" placeholder="Nombre o dejar vacío">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. OBSERVACIONES -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-num">6</div>
+      <div class="sec-name">Observaciones adicionales</div>
+    </div>
+    <div class="sec-body">
+      <textarea id="observaciones" placeholder="Cualquier detalle extra que el coordinador deba saber… (opcional)"></textarea>
+    </div>
+  </div>
+
+  <!-- ENVIAR -->
+  <div class="submit-card">
+    <button class="btn" id="btnSend" onclick="enviar()">Enviar solicitud →</button>
+    <div class="note">Al enviar, se notificará a Victor Solano y se registrará en el sistema.</div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+</div>
+
+<script>
+var opN = 1;
+var currentOT = '';
+
+function getOTData() {
+  var d = new Date();
+  var yy = String(d.getFullYear()).slice(2);
+  var mm = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  var today = yy + mm + dd;
+  var lastDay = localStorage.getItem('gct_day') || '';
+  var lastSeq = parseInt(localStorage.getItem('gct_seq') || '0');
+  var seq = (lastDay === today) ? lastSeq + 1 : 1;
+  return { ot: 'OT-' + today + '-' + String(seq).padStart(3,'0'), day: today, seq: seq };
+}
+
+function saveOT(day, seq) {
+  localStorage.setItem('gct_day', day);
+  localStorage.setItem('gct_seq', seq);
+}
+
+function fmtDate(d) {
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+}
+
+function fmtHour(d) {
+  var h = d.getHours(), m = String(d.getMinutes()).padStart(2,'0');
+  return (h%12||12) + ':' + m + (h>=12?' pm':' am');
+}
+
+function fmtTime(v) {
+  if (!v) return '';
+  var p = v.split(':'), h = parseInt(p[0]);
+  return (h%12||12) + ':' + p[1] + (h>=12?' pm':' am');
+}
+
+function chg(d) {
+  opN = Math.max(1, Math.min(10, opN+d));
+  var el = document.getElementById('opN');
+  el.textContent = opN;
+  var ctr = document.querySelector('.ctr');
+  if (opN >= 3) {
+    ctr.style.borderColor = '#ef4444';
+    el.style.color = '#ef4444';
+  } else if (opN === 2) {
+    ctr.style.borderColor = '#f97316';
+    el.style.color = '#f97316';
+  } else {
+    ctr.style.borderColor = 'var(--border)';
+    el.style.color = 'var(--text)';
+  }
+}
+
+function toggleOtrosPerfil(show) {
+  var el = document.getElementById('otros_perfil');
+  el.style.display = show ? 'block' : 'none';
+  if (show) setTimeout(function(){ el.focus(); }, 30);
+}
+
+function toggleOtroTipo(show) {
+  var el = document.getElementById('otro_tipo');
+  el.style.display = show ? 'block' : 'none';
+  if (show) setTimeout(function(){ el.focus(); }, 30);
+}
+
+function toggleOtroComercial(show) {
+  var el = document.getElementById('otro_comercial');
+  el.style.display = show ? 'block' : 'none';
+  if (show) setTimeout(function(){ el.focus(); }, 30);
+}
+
+document.querySelectorAll('input[name="ts"]').forEach(function(r) {
+  r.addEventListener('change', function() { toggleOtroTipo(this.value === 'Otro'); });
+});
+document.querySelectorAll('input[name="comercial"]').forEach(function(r) {
+  r.addEventListener('change', function() { toggleOtroComercial(this.value === 'OTRO'); });
+});
+document.querySelectorAll('input[name="pf"]').forEach(function(r) {
+  r.addEventListener('change', function() { toggleOtrosPerfil(this.value === 'Otros'); });
+});
+
+function pill(n) {
+  var el = document.querySelector('input[name="'+n+'"]:checked');
+  return el ? el.value : '';
+}
+
+function gv(id) {
+  var el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function buildEmail(p) {
+  function row(l,v,b){return'<tr><td style="width:38%;padding:9px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #f3f4f6;vertical-align:top">'+l+'</td><td style="padding:9px 16px;font-size:13px;border-bottom:1px solid #f3f4f6'+(b?';font-weight:700;color:#111827':'')+'">'+( v||'—')+'</td></tr>';}
+  function sec(t){return'<tr><td colspan="2" style="padding:10px 16px;background:#f9fafb;font-size:11px;font-weight:700;color:#4f46e5;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #e5e7eb">'+t+'</td></tr>';}
+  var h='<!DOCTYPE html><html><body style="margin:0;padding:20px;background:#f0f4ff;font-family:Arial,sans-serif">';
+  h+='<table width="100%" cellpadding="0" cellspacing="0" style="max-width:660px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:white">';
+  h+='<tr><td style="background:#4f46e5;padding:20px 24px">';
+  h+='<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px">GC TELECOM S.A.C. · SOLICITUD DE SERVICIO</div>';
+  h+='<div style="font-size:22px;font-weight:800;color:white;letter-spacing:0.5px">'+p.ot+'</div>';
+  h+='<div style="margin-top:8px;display:flex;gap:8px;align-items:center">';
+  h+='<span style="background:rgba(255,255,255,0.2);color:white;font-size:12px;padding:3px 10px;border-radius:999px">'+p.fecha_creacion+' · '+p.hora_creacion+'</span>';
+  h+='<span style="background:#f97316;color:white;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px">'+p.prioridad+'</span>';
+  h+='</div></td></tr>';
+  h+='<tr><td><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">';
+  h+=sec('Solicitud');
+  h+=row('Tipo de servicio',p.tipo_servicio,true);
+  h+=row('Comercial',p.comercial,false);
+  h+=sec('Cliente');
+  h+=row('Empresa / Cliente',p.cliente,true);
+  h+=row('Contacto en sitio',p.contacto,false);
+  h+=row('Celular',p.celular,false);
+  h+=sec('Ubicación');
+  h+=row('Dirección',p.direccion,false);
+  h+=row('Distrito',p.distrito,true);
+  h+=row('Acceso',p.acceso,false);
+  h+=row('Estacionamiento',p.estacionamiento,false);
+  h+=sec('Descripción del servicio');
+  h+=row('Trabajo a realizar',p.descripcion,false);
+  h+=row('Equipos',p.equipo,false);
+  h+=row('Materiales',p.materiales,false);
+  h+=sec('Programación');
+  h+=row('Fecha',p.fecha_programada,true);
+  h+=row('Hora de inicio',p.hora_inicio||'—',false);
+  h+=sec('Equipo técnico');
+  h+=row('Perfil',p.perfil,true);
+  h+=row('N° operadores',String(p.operadores),false);
+  h+=row('Técnico de preferencia',p.tecnico,false);
+  if(p.observaciones){h+=sec('Observaciones');h+='<tr><td colspan="2" style="padding:12px 16px;font-size:13px;color:#374151">'+p.observaciones+'</td></tr>';}
+  h+='</table></td></tr>';
+  h+='<tr><td style="padding:14px 20px;background:#f9fafb;font-size:11px;color:#9ca3af;text-align:center;border-top:1px solid #f3f4f6">';
+  h+='Sistema de Operaciones · GC TELECOM S.A.C. · Estado: <strong>Programada</strong>';
+  h+='</td></tr></table></body></html>';
+  return h;
+}
+
+function enviar() {
+  var btn = document.getElementById('btnSend');
+  var t = document.getElementById('toast');
+
+  var comercial = pill('comercial') === 'OTRO' && gv('otro_comercial') ? gv('otro_comercial') : pill('comercial');
+  var cliente = gv('cliente');
+  var distrito = gv('distrito');
+  var direccion = gv('direccion');
+  var descripcion = gv('descripcion');
+  var fp = gv('fecha_programada');
+
+  if (!comercial || !cliente || !distrito || !direccion || !descripcion || !fp) {
+    t.className = 'toast terr';
+    t.textContent = 'Por favor complete: Comercial, Cliente, Distrito, Dirección, Descripción y Fecha.';
+    t.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  btn.disabled = true;
+  t.className = 'toast tload';
+  t.textContent = 'Enviando solicitud al coordinador…';
+
+  var otData = getOTData();
+  currentOT = otData.ot;
+  var now = new Date();
+  var fpArr = fp.split('-');
+  var fpFmt = fpArr[2]+'/'+fpArr[1]+'/'+fpArr[0];
+
+  var payload = {
+    ot: currentOT,
+    fecha_creacion: fmtDate(now),
+    hora_creacion: fmtHour(now),
+    comercial: pill('comercial'),
+    prioridad: pill('pr'),
+    tipo_servicio: (pill('ts')==='Otro' && gv('otro_tipo')) ? 'Otro: '+gv('otro_tipo') : pill('ts'),
+    cliente: cliente,
+    contacto: gv('contacto'),
+    celular: gv('celular'),
+    direccion: direccion,
+    distrito: distrito,
+    acceso: pill('acc'),
+    estacionamiento: pill('est'),
+    descripcion: descripcion,
+    equipo: gv('equipo'),
+    materiales: gv('materiales'),
+    fecha_programada: fpFmt,
+    hora_inicio: gv('hora_inicio'),
+    hora_fin: '',
+    perfil: (pill('pf')==='Otros' && gv('otros_perfil')) ? 'Otros: '+gv('otros_perfil') : pill('pf'),
+    operadores: opN,
+    tecnico: gv('tecnico') || 'Sin preferencia',
+    observaciones: gv('observaciones'),
+    estado: 'Programada',
+    n_anulaciones: 0
+  };
+
+  payload.html_cuerpo = buildEmail(payload);
+
+  function onDone() {
+    saveOT(otData.day, otData.seq);
+    t.className = 'toast tok';
+    t.textContent = '✓ Solicitud ' + currentOT + ' enviada. Victor Solano fue notificado.';
+    btn.textContent = '✓ Enviado';
+    setTimeout(function(){
+      var next = getOTData();
+      currentOT = next.ot;
+      otData = next;
+      document.getElementById('otDisplay').textContent = currentOT;
+      btn.disabled = false;
+      btn.textContent = 'Enviar solicitud →';
+      t.className = 'toast';
+    }, 7000);
+  }
+
+  var webhookUrl = 'https://flow.zoho.com/727924246/flow/webhook/incoming?zapikey=1001.6229c3a31da8118a39eb3dea760769ad.16cbc479dd75d0593d59ba4981b2033f&isdebug=false';
+  var proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(webhookUrl);
+
+  fetch(proxyUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function(){ onDone(); }).catch(function(){ onDone(); });
+}
+
+// Poblar select de hora inicio (00:00 a 23:30 cada 30 min)
+(function() {
+  var sel = document.getElementById('hora_inicio');
+  for (var h = 0; h < 24; h++) {
+    for (var m = 0; m < 60; m += 30) {
+      var hh = String(h).padStart(2,'0');
+      var mm = String(m).padStart(2,'0');
+      var opt = document.createElement('option');
+      opt.value = hh + ':' + mm;
+      opt.textContent = hh + ':' + mm;
+      sel.appendChild(opt);
+    }
+  }
+})();
+var initOT = getOTData();
+currentOT = initOT.ot;
+document.getElementById('otDisplay').textContent = currentOT;
+</script>
+</body>
+</html>
