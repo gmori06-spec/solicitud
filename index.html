@@ -1843,6 +1843,181 @@ body.print-person .card.pp-show{display:flex}
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
+
+
+// ── CORE UTILITY FUNCTIONS ──
+function _setCloud(s){
+  const dot=document.getElementById('cloud-dot');
+  const lbl=document.getElementById('cloud-lbl');
+  if(!dot)return;
+  const c={online:'#4ADE80',saving:'#F59E0B',offline:'#EF4444',loading:'#6B7280'};
+  const t={online:'☁ En línea',saving:'⟳ Guardando…',offline:'⚠ Sin conexión',loading:'Cargando…'};
+  dot.style.background=c[s]||c.loading;
+  if(lbl)lbl.textContent=t[s]||t.loading;
+}
+
+function confirmArchive(id){
+  const p=APP.getProj(id);
+  const body=`<p class="confirm-msg">¿Marcar <strong>${escH(p?.nombre||'')}</strong> como culminado y mover al archivo?</p><p class="confirm-sub">Podrás restaurarlo en cualquier momento desde el tab Archivo.</p>`;
+  const ftr=`<button class="tb-btn btn-outline" onclick="closeModal()">Cancelar</button>
+    <button class="tb-btn btn-success" onclick="closeModal();APP.archiveProject(${id})">✓ Marcar culminado</button>`;
+  showModal('Archivar proyecto',body,ftr,'confirm');
+}
+
+function navigateToAllConflicts(){
+  const conflicts=APP.getConflicts();
+  if(!conflicts.length)return;
+  navigateToConflict(conflicts[0].p1id,conflicts[0].p2id);
+  if(conflicts.length>1){
+    setTimeout(()=>{
+      conflicts.slice(1).forEach(c=>{
+        [c.p1id,c.p2id].forEach(id=>{
+          const row=document.querySelector(`tr[data-proj-id="${id}"]`);
+          if(row){row.classList.add('row-conflict-flash');setTimeout(()=>row.classList.remove('row-conflict-flash'),2800);}
+        });
+      });
+    },350);
+  }
+}
+
+function navigateToFilter(status, flashClass='row-flash-blue'){
+  openTab(null,'t-proj');
+  // Apply filter
+  const sel=document.getElementById('proj-filter-status');
+  if(sel){sel.value=status;filterProjects();}
+  // Clear other filters
+  const sk=document.getElementById('proj-filter-kam');if(sk)sk.value='';
+  const si=document.getElementById('proj-search');if(si)si.value='';
+  renderProjectsTable();
+  setTimeout(()=>{
+    const matching=APP.activeProjects().filter(p=>p.status===status);
+    matching.forEach((p,i)=>{
+      const row=document.querySelector(`tr[data-proj-id="${p.id}"]`);
+      if(row){
+        row.classList.add(flashClass);
+        if(i===0)row.scrollIntoView({behavior:'smooth',block:'center'});
+        setTimeout(()=>row.classList.remove(flashClass),2200);
+      }
+    });
+    const lbl={ejecucion:'En Ejecución',confirmado:'Confirmados',pendiente:'Pendientes'}[status]||status;
+    toast(`Mostrando: ${lbl} (${matching.length} proyecto${matching.length!==1?'s':''})`,'ok');
+  },130);
+}
+
+function scrollToEcoTable(){
+  const el=document.getElementById('eco-tbody');
+  if(el){
+    el.closest('.eco-table-wrap')?.scrollIntoView({behavior:'smooth',block:'start'});
+    toast('💰 Ranking económico — proyectado por pipeline','ok');
+  }
+}
+
+function getTecScheduleConflicts(excludeId, tecIds, fechaIni, fechaFin) {
+  if(!tecIds||!tecIds.length||!fechaIni||!fechaFin) return [];
+  const conflicts=[];
+  const others=APP.state.projects.filter(p=>!p.archived&&p.id!==excludeId&&p.tecs_ids&&p.tecs_ids.length>0&&p.fecha_ini&&p.fecha_fin);
+  for(const other of others){
+    // Date overlap: A.start <= B.end AND B.start <= A.end
+    if(fechaIni<=other.fecha_fin && other.fecha_ini<=fechaFin){
+      const shared=tecIds.filter(id=>other.tecs_ids.includes(id));
+      if(shared.length>0){
+        const tecNames=shared.map(id=>{const t=APP.getTec(id);return t?t.nombre:'ID'+id;}).join(', ');
+        const dStart=other.fecha_ini.replace(/-/g,'/');
+        const dEnd=other.fecha_fin.replace(/-/g,'/');
+        conflicts.push({proyecto:other.nombre,tecNames,rango:`${dStart} al ${dEnd}`});
+      }
+    }
+  }
+  return conflicts;
+}
+
+function showConflictAlert(conflicts, onConfirm) {
+  if(!conflicts.length){ onConfirm(); return; }
+  // Build visual alert modal
+  const msg = conflicts.map(c=>
+    `<div class="conf-item"><span class="conf-icon">⚠</span><div><strong>${escH(c.tecNames)}</strong><br>ya tiene trabajo en <em>${escH(c.proyecto)}</em><br><small>${c.rango}</small></div></div>`
+  ).join('');
+  const body=`<div class="conf-box">
+    <div class="conf-title">⚠ Conflicto de agenda detectado</div>
+    <div class="conf-subtitle">Los siguientes técnicos ya están asignados a otro proyecto en las mismas fechas:</div>
+    <div class="conf-list">${msg}</div>
+    <div class="conf-actions">
+      <button class="tb-btn btn-outline conf-cancel" onclick="closeModal()">✕ Cancelar</button>
+      <button class="tb-btn btn-danger conf-ok" onclick="closeModal();(window._confCb&&window._confCb())">⚡ Guardar igual</button>
+    </div>
+  </div>`;
+  window._confCb = onConfirm;
+  showModal('⚠ Conflicto de agenda', body, '', '');
+}
+
+function prfRender(){
+  try{
+    prfRenderNav();
+    const main=document.getElementById("prf-main");
+    if(!main){console.warn("prf-main not found");return;}
+    main.innerHTML="";
+    if(prfView==="all"){
+      const g=document.createElement("div");g.className="all-grid";
+      prfPersons.forEach(p=>{
+        try{g.appendChild(prfMkCard(p));}
+        catch(e){console.error("Card error for",p.nombre,e);}
+      });
+      if(!g.children.length){
+        g.innerHTML='<div style="color:#94A3B8;font-size:13px;padding:20px">No hay perfiles cargados.</div>';
+      }
+      main.appendChild(g);
+    }else{
+      main.appendChild(prfMkTeamSection(parseInt(prfView)));
+    }
+  }catch(e){console.error("prfRender error:",e);}
+}
+
+function prfSave(){
+  const data={persons:prfPersons,dims:prfDims.filter(x=>x.custom),teams:Object.values(prfTeams).filter(x=>x.custom)};
+  try{localStorage.setItem('gct_perfiles_v1',JSON.stringify(data));}catch(e){}
+  if(typeof _DOC!=='undefined'){
+    const fbData=JSON.parse(APP.exportJSON());
+    fbData.perfiles=data;
+    _skipSnap=true;
+    _DOC.set(fbData).catch(e=>console.error('Perfiles save:',e));
+  }
+}
+
+function pvtSave(){
+  if(typeof saveLS === 'function') saveLS();
+}
+
+function pvtGetKamStats(kamName, windowDays){
+  const today = _today();
+  const winEnd = _dateAdd(today, windowDays);
+  const active = APP.state.preventa.filter(p =>
+    p.responsable === kamName &&
+    p.status !== 'entregado' &&
+    p.fecha_entrega >= today
+  );
+  const intervals = active
+    .map(p => {
+      const s = (p.fecha_ini||today) > today ? (p.fecha_ini||today) : today;
+      const e = (p.fecha_entrega||today) < winEnd ? (p.fecha_entrega||today) : winEnd;
+      return [s, e];
+    })
+    .filter(([s,e]) => s <= e)
+    .sort();
+  let merged = [];
+  for(const [s,e] of intervals){
+    if(merged.length && s <= merged[merged.length-1][1]){
+      merged[merged.length-1][1] = merged[merged.length-1][1]>e ? merged[merged.length-1][1] : e;
+    }else merged.push([s,e]);
+  }
+  let occupied = 0;
+  for(const [s,e] of merged) occupied += _dateDiff(s,e)+1;
+  const pct = Math.min(100, Math.round(occupied/windowDays*100));
+  const lastEnd = active.length ? active.sort((a,b)=>a.fecha_entrega<b.fecha_entrega?1:-1)[0].fecha_entrega : null;
+  const nextFree = lastEnd && lastEnd>=today ? _dateAdd(lastEnd,1) : today;
+  const color = pct===0?'verde':pct<50?'amarillo':'rojo';
+  return {pct, nextFree, color, count:active.length};
+}
+
 var prfPersons=[], prfTeams={}, prfDims=[];
 const APP = {
   state: {
@@ -3501,6 +3676,47 @@ function _pvtRemoveTeamMember(idx){
 }
 
 // Override pvtRenderResources to use preventa_team instead of KAMs
+function pvtRenderResources(){
+  const panel = document.getElementById('preventa-resource-panel');
+  if(!panel) return;
+  const KAMS = APP.state.kams && APP.state.kams.length ? APP.state.kams :
+    [...new Set(APP.state.preventa.map(p=>p.responsable).filter(Boolean))];
+  if(!KAMS.length){panel.innerHTML='';return;}
+  const KAM_COLORS=['#6366F1','#0EA5E9','#F59E0B','#10B981','#EF4444','#8B5CF6','#EC4899'];
+  const cards = KAMS.map((kam,i)=>{
+    const stats = pvtGetKamStats(kam, 30);
+    const initials = kam.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color = KAM_COLORS[i%KAM_COLORS.length];
+    const freeLabel = stats.pct===0 ? '✓ Libre' : 'Libre '+_fmtDateShort(stats.nextFree);
+    const activeCount = stats.count;
+    return `<div class="tav-card">
+      <div class="tav-card-top">
+        <div class="tav-avatar" style="background:${color}">${escH(initials)}</div>
+        <div style="min-width:0">
+          <div class="tav-name">${escH(kam)}</div>
+          <div class="tav-proj">${activeCount?activeCount+' informe'+(activeCount>1?'s':'')+' activo'+(activeCount>1?'s':''):'Sin informes activos'}</div>
+        </div>
+      </div>
+      <div class="tav-bar-wrap"><div class="tav-bar ${stats.color}" style="width:${stats.pct}%"></div></div>
+      <div class="tav-stats">
+        <span class="tav-pct ${stats.color}">${stats.pct}%</span>
+        <span class="tav-free tav-free-badge ${stats.color}">${freeLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+  panel.innerHTML = `<div class="pvt-resource-section">
+    <div class="tav-header">
+      <span class="tav-title">🧑‍💼 Carga KAMs — Preventa · Próx. 30 días</span>
+      <span class="tav-legend">
+        <span><span class="tav-legend-dot" style="background:#10B981"></span>Libre</span>
+        <span><span class="tav-legend-dot" style="background:#F59E0B"></span>Parcial</span>
+        <span><span class="tav-legend-dot" style="background:#EF4444"></span>Saturado</span>
+      </span>
+    </div>
+    <div class="pvt-resource-grid">${cards}${addCard}</div>
+  </div>`;
+}
+
 const _origPvtRenderResources = pvtRenderResources;
 pvtRenderResources = function(){
   const panel = document.getElementById('preventa-resource-panel');
@@ -3729,6 +3945,30 @@ async function _hashPinUtil(p){
 }
 
 // ── Override _toggleAdmin to use multi-user login ────────────────────
+function _toggleAdmin(){
+  if(_isAdmin){
+    _isAdmin=false;
+    document.body.classList.add('view-mode');
+    const b=document.getElementById('admin-lock-btn');
+    if(b){b.textContent='🔒';b.classList.remove('unlocked');}
+    toast('Modo vista activado','info');
+  } else {
+    const p=prompt('PIN de administrador:');
+    if(!p) return;
+    _hashPin(p).then(function(h){
+      if(h===_PIN_H){
+        _isAdmin=true;
+        document.body.classList.remove('view-mode');
+        const b=document.getElementById('admin-lock-btn');
+        if(b){b.textContent='🔓';b.classList.add('unlocked');}
+        toast('✓ Modo edición activado','ok');
+      } else {
+        toast('PIN incorrecto','err');
+      }
+    });
+  }
+}
+
 const _origToggleAdmin = _toggleAdmin;
 _toggleAdmin = function(){
   if(_isAdmin){
@@ -3960,6 +4200,36 @@ if(_origAddProject) APP.addProject = function(data){
 };
 
 // Hook into saveProjectFromModal
+function _doSaveProject(id, data){
+  let savedId=id;
+  if(id){
+    APP.updateProject(id,data);
+  }else{
+    // New project — save and switch modal to edit mode
+    APP.addProject(data);
+    const newP=APP.state.projects[APP.state.projects.length-1];
+    savedId=newP.id;
+    _modalProjId=savedId;
+    // Update save button to edit mode
+    const btn=document.getElementById('mf-save-btn');
+    if(btn) btn.innerHTML='💾 Guardar cambios';
+    // Update close button
+    document.querySelector('#modal-ftr .btn-outline').textContent='✕ Cerrar';
+  }
+
+  // Show success banner + button feedback (modal stays open)
+  const banner=document.getElementById('mf-saved-banner');
+  const btn=document.getElementById('mf-save-btn');
+  if(banner){banner.classList.add('show');setTimeout(()=>banner.classList.remove('show'),2800);}
+  if(btn){
+    btn.classList.add('btn-saved');
+    btn.textContent='✓ Guardado';
+    setTimeout(()=>{
+      if(btn){btn.classList.remove('btn-saved');btn.innerHTML='💾 Guardar cambios';}
+    },2200);
+  }
+}
+
 const _origDoSaveProject = _doSaveProject;
 if(typeof _doSaveProject==='function'){
   window._doSaveProject = function(id,data){
@@ -5222,7 +5492,7 @@ function _clearTecFecha(projId,tecId){
 // Un cambio en cualquier lado → renderAll() actualiza TODO
 // ════════════════════════════════════════════════════════════════════
 
-const _TEC_AVATAR_COLORS=['#6366F1','#EF4444','#F59E0B','#10B981','#0EA5E9','#8B5CF6','#EC4899','#F97316','#14B8A6','#64748B'];
+var _TEC_AVATAR_COLORS=['#6366F1','#EF4444','#F59E0B','#10B981','#0EA5E9','#8B5CF6','#EC4899','#F97316','#14B8A6','#64748B'];
 
 // ── Render widget de asignaciones para un proyecto ──────────────────
 // Usado en: proyecto expand row, modal de proyecto, preventa
@@ -5641,7 +5911,7 @@ APP.init();
 
 try { _DOC.get()
   .then(doc=>{
-    if(doc.exists){_applyData(doc.data());}
+    if(doc.exists){const _d=doc.data();if(_d&&Array.isArray(_d.projects)&&_d.projects.length>0){_applyData(_d);}else{_DOC.set(JSON.parse(APP.exportJSON())).catch(e=>console.error(e));}}
     else{_DOC.set(JSON.parse(APP.exportJSON())).catch(e=>console.error(e));}
     _setCloud('online');
     renderAll();
@@ -5649,7 +5919,8 @@ try { _DOC.get()
     _DOC.onSnapshot(snap=>{
       if(_skipSnap){_skipSnap=false;return;}
       if(snap.exists&&!snap.metadata.hasPendingWrites){
-        _applyData(snap.data());
+        const _sd=snap.data();if(!_sd||!Array.isArray(_sd.projects)||_sd.projects.length===0)return;
+        _applyData(_sd);
         renderAll();
         _setCloud('online');
       }
