@@ -5271,7 +5271,7 @@ function _prfCard2(p){
         '<div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.22);border:'+avBorder+';'+avGlow+'display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff">'+ini+'</div>'+star+
       '</div>'+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.3)">'+escH(p.nombre)+' '+escH(p.ape||'')+'</div>'+
+        '<div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.3)">'+escH(p.nombre)+' '+escH(p.ape||'')+(p.edad?' · '+p.edad+' años':'')+'</div>'+
         '<div style="display:flex;align-items:center;gap:4px;margin-top:2px;flex-wrap:wrap">'+
           rolChip+
           '<span style="background:rgba(0,0,0,.18);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px">'+team.name+'</span>'+
@@ -5491,6 +5491,7 @@ function prfEditPerson2(id){
       '<div class="mf"><label class="mf-lbl">Equipo</label><select class="mf-inp" id="prf2e-eq" style="padding:7px 10px">'+to+'</select></div>'+
       '<div class="mf"><label class="mf-lbl">Especialidad</label><input class="mf-inp" id="prf2e-nivel" value="'+escH(p.nivel||'')+'" style="padding:7px 10px"></div>'+
       '<div class="mf"><label class="mf-lbl">Teléfono</label><input class="mf-inp" id="prf2e-tel" value="'+escH(p.telefono||'')+'" style="padding:7px 10px"></div>'+
+      '<div class="mf"><label class="mf-lbl">Edad</label><input class="mf-inp" id="prf2e-edad" type="number" min="18" max="75" value="'+(p.edad||'')+'" placeholder="—" style="padding:7px 10px"></div>'+
     '</div>'+
     '<div style="font-size:12px;font-weight:800;color:#0F172A;margin-bottom:6px">🎯 Habilidades (0–10)</div>'+
     skillSliders;
@@ -5522,6 +5523,7 @@ function _prfSaveEdit2(id){
   p.eq=parseInt((document.getElementById('prf2e-eq')||{}).value||1);
   p.nivel=((document.getElementById('prf2e-nivel')||{}).value||'').trim();
   p.telefono=((document.getElementById('prf2e-tel')||{}).value||'').trim();
+  p.edad=parseInt((document.getElementById('prf2e-edad')||{}).value)||null;
   var dims=_prfGetDims();p.skills={};
   dims.forEach(function(d){
     var sl=document.querySelector('input[type="range"][oninput*="sv-'+d.k+'"]');
@@ -5542,7 +5544,8 @@ function prfNewPerson2(eqId){
     '<div class="mf"><label class="mf-lbl">Equipo</label><select class="mf-inp" id="prf2n-eq">'+to+'</select></div></div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'+
     '<div class="mf"><label class="mf-lbl">Especialidad</label><input class="mf-inp" id="prf2n-nivel" placeholder="Ej: Senior RF"></div>'+
-    '<div class="mf"><label class="mf-lbl">Teléfono</label><input class="mf-inp" id="prf2n-tel"></div></div>',
+    '<div class="mf"><label class="mf-lbl">Teléfono</label><input class="mf-inp" id="prf2n-tel"></div></div>'+
+    '<div class="mf" style="margin-top:8px;max-width:120px"><label class="mf-lbl">Edad</label><input class="mf-inp" id="prf2n-edad" type="number" min="18" max="75" placeholder="—"></div>',
     '<button class="tb-btn btn-primary" style="flex:1;padding:10px" onclick="_prfSaveNew2()">Guardar</button>'+
     '<button class="tb-btn btn-outline" onclick="closeModal()">Cancelar</button>');
 }
@@ -5552,6 +5555,7 @@ function _prfSaveNew2(){
   prfPersons.push({id:prfNextId++,nombre:n,ape:((document.getElementById('prf2n-ape')||{}).value||'').trim(),
     rol:(document.getElementById('prf2n-rol')||{}).value||'MD',eq:parseInt((document.getElementById('prf2n-eq')||{}).value||1),
     nivel:((document.getElementById('prf2n-nivel')||{}).value||'').trim(),telefono:((document.getElementById('prf2n-tel')||{}).value||'').trim(),
+    edad:parseInt((document.getElementById('prf2n-edad')||{}).value)||null,
     notas:'',skills:{},activo:true});
   prfSave();closeModal();prfRender();toast('✓ Agregado','ok');
 }
