@@ -2377,6 +2377,15 @@ header>*{position:relative;z-index:1}
   .sc3-cell:active{background:#DBEAFE!important}
 }
 
+/* Indicador de guardado en el header */
+.hdr-save{font-size:11.5px;font-weight:800;padding:4px 11px;border-radius:100px;border:1px solid transparent;white-space:nowrap;transition:all .2s}
+.hdr-save:empty{display:none}
+.hdr-save.saving{background:rgba(255,159,10,.15);border-color:rgba(255,159,10,.4);color:#FFC46B}
+.hdr-save.saved{background:rgba(48,209,88,.12);border-color:rgba(48,209,88,.4);color:#6EE79A}
+.hdr-save.error{background:rgba(255,69,58,.18);border-color:rgba(255,69,58,.55);color:#FF8A80;animation:hdrSaveErr 1s ease infinite alternate}
+@keyframes hdrSaveErr{from{opacity:1}to{opacity:.55}}
+.autosave-pill.error{opacity:1;color:#FF453A}
+@media(max-width:599px){.hdr-save{display:inline-block!important;font-size:10.5px;padding:3px 8px}}
 </style></head>
 <body>
 
@@ -2391,6 +2400,7 @@ header>*{position:relative;z-index:1}
   </div>
   <div class="hdr-r">
     <span class="cloud-pill"><span class="cloud-dot" id="cloud-dot"></span><span id="cloud-lbl">Conectando…</span></span>
+    <span class="hdr-save" id="hdr-save-state" title="Estado del guardado en la nube"></span>
     <span class="hdr-date" id="hdr-date">Cargando…</span>
     <span class="hdr-sep"></span>
     <button class="hdr-btn edit-only" onclick="showExportModal()">↑ Exportar</button>
@@ -6684,19 +6694,21 @@ const _LS_KEY = 'gct-ops-v2';
 
 
 function _showAutosavePill(state) {
-  const p = document.getElementById('autosave-pill');
-  if (!p) return;
-  const map = {
-    saved: ['✓ Guardado', 'saved'],
+  var hh=new Date().toTimeString().slice(0,5);
+  var map = {
+    saved: ['✓ Guardado en la nube · '+hh, 'saved'],
     saving: ['⟳ Guardando…', 'saving'],
+    error: ['✕ NO GUARDADO — revisa conexión', 'error'],
     empty: ['', 'empty']
   };
-  const [txt, cls] = map[state] || map.empty;
-  p.className = 'autosave-pill ' + cls;
-  p.textContent = txt;
-  if (state === 'saved') setTimeout(() => {
-    if (p) { p.className = 'autosave-pill empty'; p.textContent = ''; }
-  }, 3500);
+  var m = map[state] || map.empty;
+  var p = document.getElementById('autosave-pill');
+  if (p){ p.className='autosave-pill '+m[1]; p.textContent=m[0]; }
+  var h = document.getElementById('hdr-save-state');
+  if (h){
+    h.className='hdr-save '+m[1];
+    h.textContent = state==='saving'?'⟳ Guardando…':(state==='saved'?'✓ Guardado '+hh:(state==='error'?'✕ NO guardado':h.textContent||''));
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -6881,8 +6893,19 @@ function _applyData(d){
 _setCloud('loading');
 try { _DOC.get()
   .then(doc=>{
-    if(doc.exists){_applyData(doc.data());}
-    else{_DOC.set(JSON.parse(APP.exportJSON())).catch(e=>console.error(e));}
+    var cloud=doc.exists?doc.data():null;
+    var local=null;
+    try{ var raw=localStorage.getItem(_LS_KEY); if(raw) local=JSON.parse(raw); }catch(e){}
+    if(cloud&&local&&local._ts&&(!cloud._ts||local._ts>cloud._ts)){
+      // Lo local es más reciente (un guardado a la nube falló): recuperar y re-subir
+      _applyData(local);
+      _skipSnap=true;
+      _DOC.set(local).then(function(){toast('✓ Cambios locales recuperados y subidos a la nube','ok');}).catch(function(e){console.error(e);});
+    } else if(cloud){
+      _applyData(cloud);
+    } else {
+      _DOC.set(JSON.parse(APP.exportJSON())).catch(e=>console.error(e));
+    }
     _setCloud('online');
     renderAll();
     // Real-time sync — all browsers update automatically
@@ -6907,20 +6930,38 @@ try { _DOC.get()
   _setCloud('offline');
   renderAll();
 }let _saveDebounce=null,_skipSnap=false;
+function _buildSaveData(){
+  const data=JSON.parse(APP.exportJSON());
+  try{ if(typeof prfPersons!=='undefined'&&prfPersons.length) data.perfiles={persons:prfPersons,dims:(prfDims||[]).filter(x=>x.custom),teams:Object.values(prfTeams||{}).filter(x=>x.custom)}; }catch(e){}
+  data._ts=Date.now();
+  return data;
+}
+function _flushSave(){
+  if(!_saveDebounce) return;
+  clearTimeout(_saveDebounce); _saveDebounce=null;
+  const data=_buildSaveData();
+  try{localStorage.setItem(_LS_KEY,JSON.stringify(data));}catch(e){}
+  _skipSnap=true;
+  _DOC.set(data)
+    .then(()=>{_showAutosavePill('saved');_setCloud('online');})
+    .catch(e=>{console.error('Save error:',e);_showAutosavePill('error');_setCloud('offline');toast('⚠ Sin conexión: el cambio quedó en este dispositivo y se subirá al reconectar','warn');});
+}
 function saveLS(){
-  try{localStorage.setItem(_LS_KEY,APP.exportJSON());}catch(e){}
+  const dataNow=_buildSaveData();
+  try{localStorage.setItem(_LS_KEY,JSON.stringify(dataNow));}catch(e){}
   _showAutosavePill('saving');
   clearTimeout(_saveDebounce);
   _saveDebounce=setTimeout(()=>{
-    const data=JSON.parse(APP.exportJSON());
-    // FIX: incluir SIEMPRE perfiles — antes el autoguardado pisaba/borraba los perfiles en la nube
-    try{ if(typeof prfPersons!=='undefined'&&prfPersons.length) data.perfiles={persons:prfPersons,dims:(prfDims||[]).filter(x=>x.custom),teams:Object.values(prfTeams||{}).filter(x=>x.custom)}; }catch(e){}
+    _saveDebounce=null;
+    const data=_buildSaveData();
     _skipSnap=true;
     _DOC.set(data)
       .then(()=>{_showAutosavePill('saved');_setCloud('online');})
-      .catch(e=>{console.error('Save error:',e);_showAutosavePill('saved');_setCloud('offline');});
+      .catch(e=>{console.error('Save error:',e);_showAutosavePill('error');_setCloud('offline');toast('⚠ Sin conexión: el cambio quedó en este dispositivo y se subirá al reconectar','warn');});
   },700);
 }
+// Guardado inmediato al salir/refrescar la página
+window.addEventListener('beforeunload',function(){ try{_flushSave();}catch(e){} });
 
 
 // ════════════════════════════════════════════════════════════════════
@@ -8329,9 +8370,8 @@ _toggleAdmin = function(){
     return;
   }
   if(_isAdmin){
-    _isAdmin=false;_currentUser=null;
-    _userLevel=0;
-    document.body.removeAttribute('data-nivel');
+    try{_flushSave();}catch(e){}
+    _isAdmin=false; // conserva la sesión: solo vuelve a modo vista
     document.body.classList.add('view-mode');
     const b=document.getElementById('admin-lock-btn');
     if(b){b.textContent='🔒';b.classList.remove('unlocked');}
