@@ -1538,16 +1538,13 @@ body.print-person .card.pp-show{display:flex}
 
 
 /* ── PERMISSION SYSTEM ─────────────────────────────────────────── */
-/* N1: only calendar + own profile */
-body[data-nivel="1"] .tab-btn[data-tab="t-proj"],
-body[data-nivel="1"] .tab-btn[data-tab="t-preventa"],
-body[data-nivel="1"] .tab-btn[data-tab="t-arch"]   { display:none!important }
+/* Usuario básico (1): visualiza TODO, no edita nada */
 body[data-nivel="1"] .edit-only                     { display:none!important }
 body[data-nivel="1"] .n2-only                       { display:none!important }
 body[data-nivel="1"] .n3-only                       { display:none!important }
 body[data-nivel="1"] .n4-only                       { display:none!important }
 
-/* N2: see all, no edit */
+/* Comercial (2): ve todo, solo lectura */
 body[data-nivel="2"] .edit-only                     { display:none!important }
 body[data-nivel="2"] .n3-only                       { display:none!important }
 body[data-nivel="2"] .n4-only                       { display:none!important }
@@ -1558,8 +1555,7 @@ body[data-nivel="1"] .sc3-block                     { cursor:default!important; 
 body[data-nivel="1"] .dnd-th                        { display:none!important }
 body[data-nivel="2"] .dnd-th                        { display:none!important }
 
-/* N3: edit all except perfiles */
-body[data-nivel="3"] .tab-btn[data-tab="t-perfiles"]{ display:none!important }
+/* Administrador/PM (3): edita todo; Perfiles con visto bueno del superadmin */
 body[data-nivel="3"] .n4-only                       { display:none!important }
 
 /* N4: full access — nothing hidden */
@@ -2213,7 +2209,7 @@ header>*{position:relative;z-index:1}
 .sop-act{border:1px solid #E2E8F0;background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:13px}
 .sop-act:hover{background:#F1F5F9}
 .sop-empty{background:#fff;border:1px dashed #CBD5E1;border-radius:var(--r);padding:36px;text-align:center;color:var(--text2);font-size:14px}
-body[data-nivel="1"] .tab-btn[data-tab="t-sop"]{display:none!important}
+/* (básico ve Soportes en modo lectura) */
 @media(max-width:599px){.sop-row{gap:8px}.sop-col{min-width:45%}}
 /* ═══ Marco del calendario v2: header plomo + borde unificado ═══ */
 .sched-board{border:1px solid #0F172A!important;border-radius:14px!important;overflow:hidden!important;box-shadow:0 6px 22px rgba(10,22,40,.16)!important}
@@ -4853,7 +4849,7 @@ function openTab(e,id){
   if(pane)pane.classList.add('active');
   if(e&&e.currentTarget)e.currentTarget.classList.add('active');
   else document.querySelectorAll('.tab-btn').forEach(function(b){var oc=b.getAttribute('onclick');if(oc&&oc.indexOf("'"+id+"'")>=0)b.classList.add('active');});
-  if(id==='t-perfiles'){try{prfRender();}catch(ex){console.error(ex);}}
+  if(id==='t-perfiles'){try{prfRender();}catch(ex){console.error(ex);}try{if(!window._prfApprovedSnap&&!APP.state.prf_pending)_prfTakeApprovedSnap();_prfRenderApprovalBanner();}catch(ex){}}
   if(id==='t-preventa'){window.setTimeout(function(){try{renderPreventa();}catch(ex){}},50);}
   if(id==='t-proj'){try{renderProjectsTable();updateTabBadges();}catch(ex){}}
   if(id==='t-sop'){try{renderSoportes();}catch(ex){}}
@@ -5397,6 +5393,49 @@ function prfRender(){
 }
 
 // ── Edit con sliders de skills ────────────────────────────────────────
+// Visto bueno de cambios de Perfiles hechos por el PM
+function _prfTakeApprovedSnap(){
+  try{ window._prfApprovedSnap=JSON.parse(JSON.stringify(prfPersons)); }catch(e){}
+}
+function _prfRenderApprovalBanner(){
+  var host=document.getElementById('prf-approval-banner');
+  if(!host){
+    var pane=document.getElementById('t-perfiles');
+    if(!pane) return;
+    host=document.createElement('div'); host.id='prf-approval-banner';
+    pane.insertBefore(host, pane.firstChild);
+  }
+  var pend=APP.state.prf_pending;
+  if(!pend||_userLevel!==4){ host.innerHTML=''; return; }
+  var d=new Date(pend.ts);
+  host.innerHTML='<div style="margin:10px 12px 0;background:#FFF7E6;border:1.5px solid #F59E0B;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+
+    '<span style="font-size:13px;font-weight:800;color:#92400E">Visto bueno pendiente</span>'+
+    '<span style="font-size:12px;color:#78350F;flex:1;min-width:180px">'+escH(pend.usuario)+' hizo '+(pend.items||1)+' cambio(s) en Perfiles ('+d.toLocaleDateString()+' '+d.toLocaleTimeString().slice(0,5)+')</span>'+
+    '<button class="tb-btn" style="background:#16A34A;color:#fff" onclick="_prfApprove()">Aprobar</button>'+
+    '<button class="tb-btn" style="background:#DC2626;color:#fff" onclick="_prfReject()">Revertir</button>'+
+  '</div>';
+}
+function _prfApprove(){
+  APP.state.prf_pending=null;
+  _prfTakeApprovedSnap();
+  if(typeof saveLS==='function') saveLS();
+  _prfRenderApprovalBanner();
+  toast('Cambios de Perfiles aprobados','ok');
+}
+function _prfReject(){
+  var pend=APP.state.prf_pending;
+  if(pend&&pend.snapshot){
+    try{ prfPersons.length=0; pend.snapshot.forEach(function(p){prfPersons.push(p);}); }catch(e){}
+  }
+  APP.state.prf_pending=null;
+  _prfTakeApprovedSnap();
+  const data={persons:prfPersons,dims:prfDims.filter(x=>x.custom),teams:Object.values(prfTeams).filter(x=>x.custom)};
+  try{localStorage.setItem('gct_perfiles_v1',JSON.stringify(data));}catch(e){}
+  if(typeof saveLS==='function') saveLS();
+  try{prfRender();}catch(e){}
+  _prfRenderApprovalBanner();
+  toast('Cambios revertidos al último estado aprobado','warn');
+}
 function prfEditPerson2(id){
   var p=prfPersons.find(function(x){return x.id===id;});if(!p)return;
   var skills=p.skills||{};
@@ -6222,7 +6261,7 @@ function _startColResize(e){
 
 // ════════════════════════════════════════════════════════════════════
 // AUTH SYSTEM — TELECOM OPS
-// Levels: 1=Técnico, 2=Lector, 3=Editor, 4=SuperAdmin
+// Tipos: 1=Usuario básico (2 heredado=básico), 3=Administrador, 4=Superadministrador
 // ════════════════════════════════════════════════════════════════════
 
 var _currentUser = null;
@@ -6231,7 +6270,7 @@ var _userLevel   = 0;
 // ── User store (localStorage) ─────────────────────────────────────
 var _USERS_KEY = 'gct_users_v1';
 var _SESSION_KEY = 'gct_session_v1';
-var NIVEL_LABELS = {1:'N1 · Técnico',2:'N2 · Lector',3:'N3 · Editor',4:'N4 · Admin'};
+var NIVEL_LABELS = {1:'Usuario básico',2:'Comercial',3:'Administrador (PM)',4:'Superadministrador'};
 var NIVEL_COLORS = {1:'#1D4ED8',2:'#15803D',3:'#C2410C',4:'#0A1628'};
 
 function _loadUsers(){
@@ -6332,7 +6371,7 @@ function _applyPermissions(){
   if(nm && _currentUser) nm.textContent = _currentUser.nombre||_currentUser.username;
   if(nv) nv.textContent = NIVEL_LABELS[n]||('N'+n);
 
-  // N1: auto-navigate to Técnicos tab
+  // Usuario básico entra a Técnicos como pantalla inicial (puede navegar a todas)
   if(n===1){ try{ openTab(null,'t-tec'); }catch(e){} }
 
   // Sync all tabs for correct initial render
@@ -6359,6 +6398,11 @@ function _restoreSession(){
 // ── Permission guard (call before any edit action) ────────────────
 function _canEdit(minLevel){
   minLevel = minLevel||3;
+  if(!_currentUser){
+    toast('Inicia sesión para hacer cambios','err');
+    var sc=document.getElementById('auth-screen'); if(sc) sc.classList.remove('hidden');
+    return false;
+  }
   if(_userLevel < minLevel){
     toast('⛔ Sin permisos para esta acción (requiere N'+minLevel+')', 'error');
     return false;
@@ -6799,7 +6843,10 @@ function _setCloud(s){
 }
 function _applyData(d){
   if(d.perfiles){prfLoad(d.perfiles);}
-  if(d.asignaciones&&Array.isArray(d.asignaciones)){APP.state.asignaciones=d.asignaciones;}
+  if(d.asignaciones&&Array.isArray(d.asignaciones)){
+    APP.state.asignaciones=d.asignaciones;
+    try{ _asigNextId=Math.max(0,...d.asignaciones.map(a=>a.id||0))+1; }catch(e){}
+  }
   if(d.preventa&&Array.isArray(d.preventa)&&d.preventa.length>0){
     APP.state.preventa=d.preventa;
     _pvtNextId=Math.max(0,...d.preventa.map(x=>x.id))+1;
@@ -6850,6 +6897,8 @@ function saveLS(){
   clearTimeout(_saveDebounce);
   _saveDebounce=setTimeout(()=>{
     const data=JSON.parse(APP.exportJSON());
+    // FIX: incluir SIEMPRE perfiles — antes el autoguardado pisaba/borraba los perfiles en la nube
+    try{ if(typeof prfPersons!=='undefined'&&prfPersons.length) data.perfiles={persons:prfPersons,dims:(prfDims||[]).filter(x=>x.custom),teams:Object.values(prfTeams||{}).filter(x=>x.custom)}; }catch(e){}
     _skipSnap=true;
     _DOC.set(data)
       .then(()=>{_showAutosavePill('saved');_setCloud('online');})
@@ -6898,7 +6947,7 @@ function _toggleAdmin(){
 // Init: start in view mode, check URL for admin
 document.body.classList.add('view-mode');
 (function(){
-  const _ua=new URLSearchParams(window.location.search).get('admin');
+  const _ua=null; // puerta trasera ?admin= deshabilitada: el acceso es solo por login
   if(_ua){
     _hashPin(_ua).then(function(h){
       if(h===_PIN_H){
@@ -6965,16 +7014,38 @@ let prfView="all", prfNextId=200;
 
 // ── SAVE/LOAD FROM FIREBASE ────────────────────────────────────────
 function prfSave(){
-  if(!_canEdit(4)) return;
+  if(!_canEdit(3)){toast('NO SE GUARDÓ — abre el candado (modo edición) e inténtalo de nuevo','err');return false;}
+  // PM (nivel 3): el cambio se aplica pero queda PENDIENTE de visto bueno del superadmin
+  if(_userLevel===3){
+    try{
+      if(!APP.state.prf_pending){
+        APP.state.prf_pending={snapshot:window._prfApprovedSnap||null,ts:Date.now(),usuario:(_currentUser&&(_currentUser.nombre||_currentUser.username))||'PM',items:0};
+      }
+      APP.state.prf_pending.items=(APP.state.prf_pending.items||0)+1;
+      APP.state.prf_pending.ts=Date.now();
+      toast('Guardado — pendiente de visto bueno del superadministrador','warn');
+    }catch(e){}
+  }
   const data={persons:prfPersons,dims:prfDims.filter(x=>x.custom),teams:Object.values(prfTeams).filter(x=>x.custom)};
-  try{localStorage.setItem('gct_perfiles_v1',JSON.stringify(data));}catch(e){}
+  var _lsOk=false;
+  try{localStorage.setItem('gct_perfiles_v1',JSON.stringify(data));_lsOk=true;}catch(e){}
   try{ _syncAll(); }catch(e){ console.error('_syncAll:',e); }
   if(typeof _DOC!=='undefined'){
     const fbData=JSON.parse(APP.exportJSON());
     fbData.perfiles=data;
     _skipSnap=true;
-    _DOC.set(fbData).catch(e=>console.error('Perfiles save:',e));
+    _DOC.set(fbData).then(function(){
+      toast('✓ Perfiles guardados en la nube','ok');
+    }).catch(function(e){
+      console.error('Perfiles save:',e);
+      toast('⚠ NO se guardó en la nube ('+(e&&e.message?e.message:'sin conexión')+') — reintenta','err');
+    });
+  } else if(_lsOk){
+    toast('Guardado solo en este dispositivo (sin conexión a la nube)','warn');
+  } else {
+    toast('⚠ NO SE PUDO GUARDAR — reintenta','err');
   }
+  return true;
 }
 function prfLoad(externalData){
   const DEF={nombre:"",ape:"",edad:null,brev:false,nivel:"",alt:0,adv:[],env:[],v:false,rol:"JR",eq:1,s:{}};
@@ -7516,6 +7587,7 @@ APP.exportJSON = function(){
   const data = JSON.parse(_origExportJSON());
   data.preventa = APP.state.preventa;
   data.preventa_team = APP.state.preventa_team||[];
+  data.asignaciones = APP.state.asignaciones||[];
   return JSON.stringify(data);
 };
 
@@ -8226,6 +8298,11 @@ async function _hashPinUtil(p){
 // ── Override _toggleAdmin to use multi-user login ────────────────────
 const _origToggleAdmin = _toggleAdmin;
 _toggleAdmin = function(){
+  if(!_currentUser){
+    toast('Primero inicia sesión','err');
+    var sc=document.getElementById('auth-screen'); if(sc) sc.classList.remove('hidden');
+    return;
+  }
   if(_isAdmin){
     _isAdmin=false;_currentUser=null;
     _userLevel=0;
@@ -8685,7 +8762,7 @@ function _pvtAddCard(){
 <!-- ════════════════════════════════════════════ -->
 <!-- AUTH SCREEN                                  -->
 <!-- ════════════════════════════════════════════ -->
-<div id="auth-screen" class="hidden">
+<div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">GC</div>
     <div class="auth-title">TELECOM</div>
@@ -8720,10 +8797,10 @@ function _pvtAddCard(){
         <div><div class="mf-lbl">Contraseña</div><input class="mf-inp" id="nu-pass" type="password" placeholder="••••••"></div>
         <div><div class="mf-lbl">Nivel</div>
           <select class="mf-inp" id="nu-nivel">
-            <option value="1">N1 — Técnico</option>
-            <option value="2">N2 — Solo lectura</option>
-            <option value="3" selected>N3 — Editor</option>
-            <option value="4">N4 — Admin</option>
+            <option value="1">Usuario básico — ve todo, no edita</option>
+            <option value="2">Comercial (KAM) — ve todo, no edita</option>
+            <option value="3" selected>Administrador (PM) — edita todo; Perfiles con visto bueno</option>
+            <option value="4">Superadministrador — control total</option>
           </select>
         </div>
         <button class="tb-btn" style="background:#0A1628;color:#fff;padding:8px 16px" onclick="_usrAdd()">+ Agregar</button>
