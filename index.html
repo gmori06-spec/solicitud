@@ -1544,8 +1544,11 @@ body[data-nivel="1"] .n2-only                       { display:none!important }
 body[data-nivel="1"] .n3-only                       { display:none!important }
 body[data-nivel="1"] .n4-only                       { display:none!important }
 
-/* Comercial (2): ve todo, solo lectura */
+/* Preventa (2): ve todo, edita SOLO la pestaña Preventa */
 body[data-nivel="2"] .edit-only                     { display:none!important }
+body[data-nivel="2"] #t-preventa .edit-only         { display:initial!important }
+body[data-nivel="2"] #t-preventa button.edit-only,
+body[data-nivel="2"] #t-preventa .pvt-card-actions.edit-only{ display:inline-flex!important }
 body[data-nivel="2"] .n3-only                       { display:none!important }
 body[data-nivel="2"] .n4-only                       { display:none!important }
 body[data-nivel="2"] .sc3-cell                      { cursor:default!important }
@@ -6270,7 +6273,7 @@ var _userLevel   = 0;
 // ── User store (localStorage) ─────────────────────────────────────
 var _USERS_KEY = 'gct_users_v1';
 var _SESSION_KEY = 'gct_session_v1';
-var NIVEL_LABELS = {1:'Usuario básico',2:'Comercial',3:'Administrador (PM)',4:'Superadministrador'};
+var NIVEL_LABELS = {1:'Solo visualización',2:'Preventa',3:'Administrador (PM)',4:'Superadministrador'};
 var NIVEL_COLORS = {1:'#1D4ED8',2:'#15803D',3:'#C2410C',4:'#0A1628'};
 
 function _loadUsers(){
@@ -6291,6 +6294,11 @@ function _initDefaultUsers(){
     {id:'u1',username:'admin',    password:'1234',    nombre:'Guillermo Mori',nivel:4},
     {id:'u1b',username:'guillermo',password:'gct2026',nombre:'Guillermo Mori',nivel:4},
     {id:'u2',username:'victor',  password:'vsolano2026',nombre:'Victor Solano',nivel:3},
+    {id:'u3',username:'vparedes',password:'preventa2026',nombre:'Victor Paredes',nivel:2},
+    {id:'u4',username:'wcarhuancho',password:'preventa2026',nombre:'Wilmer Carhuancho',nivel:2},
+    {id:'u5',username:'comercial',password:'ver2026',nombre:'Comerciales',nivel:1},
+    {id:'u6',username:'tecnicos', password:'ver2026',nombre:'Técnicos',nivel:1},
+    {id:'u7',username:'administracion',password:'ver2026',nombre:'Administración',nivel:1},
   ];
   var changed = false;
   DEFAULTS.forEach(function(def){
@@ -7831,7 +7839,7 @@ function openPreventaModal(id){
 }
 
 function _savePreventaModal(id){
-  if(!_canEdit(3)) return;
+  if(!_canEdit(2)) return;
   const nombre = (document.getElementById('pvt-nombre')||{}).value?.trim();
   if(!nombre){toast('El nombre es obligatorio','err');return;}
   const fin = (document.getElementById('pvt-fin')||{}).value;
@@ -7859,7 +7867,7 @@ function _savePreventaModal(id){
 }
 
 function markPreventaEntregado(id){
-  if(!_canEdit(3)) return;
+  if(!_canEdit(2)) return;
   const item = APP.state.preventa.find(x=>x.id===id);
   if(!item)return;
   item.status='entregado';
@@ -7869,7 +7877,7 @@ function markPreventaEntregado(id){
 }
 
 function deletePreventaItem(id){
-  if(!_canEdit(3)) return;
+  if(!_canEdit(2)) return;
   const item = APP.state.preventa.find(x=>x.id===id);
   if(!item||!confirm(`¿Eliminar "${item.nombre}"?`))return;
   APP.state.preventa = APP.state.preventa.filter(x=>x.id!==id);
@@ -8798,8 +8806,8 @@ function _pvtAddCard(){
         <div><div class="mf-lbl">Contraseña</div><input class="mf-inp" id="nu-pass" type="password" placeholder="••••••"></div>
         <div><div class="mf-lbl">Nivel</div>
           <select class="mf-inp" id="nu-nivel">
-            <option value="1">Usuario básico — ve todo, no edita</option>
-            <option value="2">Comercial (KAM) — ve todo, no edita</option>
+            <option value="1">Solo visualización — ve todo, no edita</option>
+            <option value="2">Preventa — ve todo, edita solo Preventa</option>
             <option value="3" selected>Administrador (PM) — edita todo; Perfiles con visto bueno</option>
             <option value="4">Superadministrador — control total</option>
           </select>
