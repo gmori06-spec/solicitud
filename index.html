@@ -2253,7 +2253,7 @@ header>*{position:relative;z-index:1}
     linear-gradient(180deg,#0C1B30,#0A1628)!important;
   border-bottom:none!important;
   box-shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 4px 18px rgba(4,12,26,.45);
-  position:relative;
+  position:sticky!important;top:0;z-index:300;
 }
 .hdr::after{
   content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
@@ -2403,8 +2403,6 @@ header>*{position:relative;z-index:1}
     <span class="hdr-save" id="hdr-save-state" title="Estado del guardado en la nube"></span>
     <span class="hdr-date" id="hdr-date">Cargando…</span>
     <span class="hdr-sep"></span>
-    <button class="hdr-btn edit-only" onclick="showExportModal()">↑ Exportar</button>
-    <button class="hdr-btn edit-only" onclick="showImportModal()">↓ Importar</button>
     <button class="admin-lock" id="admin-lock-btn" onclick="_toggleAdmin()" title="Editar datos">🔒</button>
     <span class="hdr-sep"></span>
     <div class="user-pill n4-only" onclick="_showUsrModal()" title="Gestión de usuarios" id="user-pill-btn">
@@ -4862,7 +4860,7 @@ function openTab(e,id){
   if(pane)pane.classList.add('active');
   if(e&&e.currentTarget)e.currentTarget.classList.add('active');
   else document.querySelectorAll('.tab-btn').forEach(function(b){var oc=b.getAttribute('onclick');if(oc&&oc.indexOf("'"+id+"'")>=0)b.classList.add('active');});
-  if(id==='t-perfiles'){try{prfRender();}catch(ex){console.error(ex);}try{if(!window._prfApprovedSnap&&!APP.state.prf_pending)_prfTakeApprovedSnap();_prfRenderApprovalBanner();}catch(ex){}}
+  if(id==='t-perfiles'){try{_prfPurgeOldDims();}catch(ex){}try{prfRender();}catch(ex){console.error(ex);}try{if(!window._prfApprovedSnap&&!APP.state.prf_pending)_prfTakeApprovedSnap();_prfRenderApprovalBanner();}catch(ex){}}
   if(id==='t-preventa'){window.setTimeout(function(){try{renderPreventa();}catch(ex){}},50);}
   if(id==='t-proj'){try{renderProjectsTable();updateTabBadges();}catch(ex){}}
   if(id==='t-sop'){try{renderSoportes();}catch(ex){}}
@@ -5071,16 +5069,22 @@ const PRF_LEVELS2 = [
 ];
 
 // ── Skills ────────────────────────────────────────────────────────────
-const PRF_BASE_DIMS2 = [
-  {k:'rf', l:'BDA / RF',      s:'RF',  col:'#3B82F6', desc:'Amplificadores, DAS, radiofrecuencia'},
-  {k:'cab',l:'Cableado',      s:'CAB', col:'#10B981', desc:'Cat6/6A, bandejas, patch panel'},
-  {k:'fib',l:'Fibra Óptica',  s:'FIB', col:'#8B5CF6', desc:'Fusión, OTDR, tendido'},
-  {k:'seg',l:'Seguridad',     s:'SEG', col:'#EF4444', desc:'EPP, PETS, altura, IPERC'},
-  {k:'doc',l:'Documentación', s:'DOC', col:'#F59E0B', desc:'As-built, reportes, apps'},
-  {k:'lid',l:'Liderazgo',     s:'LID', col:'#EC4899', desc:'Cuadrilla, cliente, incidentes'},
-];
+const PRF_BASE_DIMS2 = []; // sin habilidades predefinidas: se crean desde cero en Perfiles
 
-function _prfGetDims(){ return (prfDims&&prfDims.length)?prfDims:PRF_BASE_DIMS2; }
+function _prfGetDims(){ return prfDims||[]; }
+function _prfIconTxt(t){ var i=(t&&t.icon||'').trim(); return (i&&i.length<=2)?i:''; }
+// Purga única: eliminar las 6 habilidades antiguas de datos ya guardados
+function _prfPurgeOldDims(){
+  try{
+    if(localStorage.getItem('gct_dims_purged_v1')) return;
+    var oldKeys=['rf','cab','fib','seg','doc','lid','tec','ent'];
+    var before=(prfDims||[]).length;
+    prfDims=(prfDims||[]).filter(function(d){return oldKeys.indexOf(d.k)<0||d.custom;});
+    (prfPersons||[]).forEach(function(p){ if(p.skills){ oldKeys.forEach(function(k){ delete p.skills[k]; }); } if(p.s){ oldKeys.forEach(function(k){ delete p.s[k]; }); } });
+    localStorage.setItem('gct_dims_purged_v1','1');
+    if(before!==(prfDims||[]).length&&typeof prfSave==='function'&&_currentUser) prfSave();
+  }catch(e){}
+}
 
 function _prfPoder2(skills){
   if(!skills)return 0;
@@ -5333,7 +5337,7 @@ function prfRender(){
       return '<button class="prf2-nav-btn'+(active?' prf2-active':'')+'" '+
         'style="'+(active?'background:'+t.b+';color:#fff;border-color:'+t.b:'')+'"'+
         ' onclick="window._pS={f:\''+t.id+'\'};prfRender()">'+
-        (t.icon?'<span>'+t.icon+'</span> ':'')+escH(t.name)+
+        (_prfIconTxt(t)?'<span>'+_prfIconTxt(t)+'</span> ':'')+escH(t.name)+
         '<span style="'+(active?'background:rgba(255,255,255,.25)':'background:#E2E8F0')+';padding:1px 7px;border-radius:8px;font-size:14px;font-weight:800">'+cnt+'</span>'+
         (tPoder?'<span style="font-size:13px;font-weight:800;'+(active?'color:rgba(255,255,255,.9)':'color:'+_poderColor(tPoder))+'" title="Poder promedio equipo">⚡'+tPoder+'</span>':'')+
       '</button>';
@@ -5374,7 +5378,7 @@ function prfRender(){
       html+='<div class="prf2-team-section">'+
         // Team header full-width
         '<div style="background:linear-gradient(135deg,'+t.b+','+t.b+'bb);padding:14px 18px;border-radius:12px;margin-bottom:14px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 15px '+t.b+'44">'+
-          '<div style="font-size:28px">'+( t.icon||'⚡')+'</div>'+
+          (_prfIconTxt(t)?'<div style="font-size:28px">'+_prfIconTxt(t)+'</div>':'')+
           '<div style="flex:1">'+
             '<div style="font-size:16px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.5px">'+escH(t.name)+'</div>'+
             '<div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:2px">'+tp.length+' integrante'+(tp.length!==1?'s':'')+'</div>'+
@@ -5578,11 +5582,7 @@ function _confirmDelPerson(id){
 }
 
 function prfManageSkills2(){
-  // Materializar las habilidades base para que TODAS sean editables
-  if(!prfDims||!prfDims.length){
-    prfDims=PRF_BASE_DIMS2.map(function(d){return Object.assign({},d);});
-    prfSave();
-  }
+  if(!prfDims) prfDims=[];
   var dims=_prfGetDims();
   var rows=dims.map(function(d){
     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#F8FAFC;border-radius:8px;margin-bottom:5px;border-left:3px solid '+d.col+'">'+
@@ -5647,7 +5647,7 @@ function prfManageTeams2(){
     var cnt=prfPersons.filter(function(p){return p.eq===t.id;}).length;
     var avgP=cnt?Math.round(prfPersons.filter(function(p){return p.eq===t.id;}).reduce(function(a,p){return a+_prfPoder2(p.skills||{});},0)/cnt):0;
     return '<div style="display:flex;align-items:center;gap:8px;padding:10px;background:linear-gradient(135deg,'+t.b+'18,'+t.b+'08);border-radius:10px;margin-bottom:6px;border-left:4px solid '+t.b+'">'+
-      '<span style="font-size:18px">'+( t.icon||'⚡')+'</span>'+
+      (_prfIconTxt(t)?'<span style="font-size:18px">'+_prfIconTxt(t)+'</span>':'')+
       '<div style="flex:1">'+
         '<span style="font-size:13px;font-weight:800;color:#0F172A">'+escH(t.name)+'</span>'+
         '<span style="font-size:13px;color:#94A3B8;margin-left:8px">'+cnt+' integrantes</span>'+
@@ -7109,12 +7109,12 @@ function prfLoad(externalData){
   if(externalData){
     if(externalData.persons&&externalData.persons.length>0)
       prfPersons=externalData.persons.map(sv=>({...DEF,...sv,s:sv.s||{},adv:sv.adv||[],env:sv.env||[]}));
-    if(externalData.dims)prfDims=[...PRF_BASE_DIMS,...externalData.dims.filter(x=>x.custom)];
+    if(externalData.dims)prfDims=[...externalData.dims.filter(x=>x.custom)];
     if(externalData.teams)externalData.teams.filter(x=>x.custom).forEach(t=>{prfTeams[t.id]=t;});
   } else {
     try{const raw=localStorage.getItem('gct_perfiles_v1');if(!raw)return;const d=JSON.parse(raw);
       if(d.persons&&d.persons.length>0)prfPersons=d.persons.map(sv=>({...DEF,...sv,s:sv.s||{},adv:sv.adv||[],env:sv.env||[]}));
-      if(d.dims)prfDims=[...PRF_BASE_DIMS,...d.dims.filter(x=>x.custom)];
+      if(d.dims)prfDims=[...d.dims.filter(x=>x.custom)];
       if(d.teams)d.teams.filter(x=>x.custom).forEach(t=>{prfTeams[t.id]=t;});
     }catch(e){}
   }
