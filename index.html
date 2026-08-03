@@ -6341,6 +6341,13 @@ function _setSession(user){
   _userLevel   = user.nivel;
   try{ localStorage.setItem(_SESSION_KEY, JSON.stringify({id:user.id,ts:Date.now()})); }catch(e){}
   _applyPermissions();
+  // Tu contraseña de login ES tu acceso: niveles 2+ entran ya en modo edición, sin PIN adicional
+  if(user.nivel>=2){
+    _isAdmin=true;
+    document.body.classList.remove('view-mode');
+    var _lb=document.getElementById('admin-lock-btn');
+    if(_lb){_lb.textContent='🔓';_lb.classList.add('unlocked');}
+  }
   var screen = document.getElementById('auth-screen');
   if(screen) screen.classList.add('hidden');
 }
@@ -8310,6 +8317,15 @@ _toggleAdmin = function(){
   if(!_currentUser){
     toast('Primero inicia sesión','err');
     var sc=document.getElementById('auth-screen'); if(sc) sc.classList.remove('hidden');
+    return;
+  }
+  // Con sesión de nivel 2+ el candado abre directo (la contraseña ya se validó al entrar)
+  if(!_isAdmin&&_userLevel>=2){
+    _isAdmin=true;
+    document.body.classList.remove('view-mode');
+    var b2=document.getElementById('admin-lock-btn');
+    if(b2){b2.textContent='🔓';b2.classList.add('unlocked');}
+    toast('✓ Modo edición activado','ok');
     return;
   }
   if(_isAdmin){
