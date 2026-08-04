@@ -401,9 +401,11 @@ body.view-mode .expand-save-btn{display:none!important}
 .proj-table tfoot td>div{border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden}
 /* El flex del footer no debe imponer ancho mínimo mayor que la tabla */
 .proj-table tfoot td>div{width:0;min-width:100%}
+/* Encuadre garantizado: recorta todo lo pintado al marco redondeado sin bloquear el scroll */
+.proj-table-wrap{clip-path:inset(0 round var(--r-lg))}
 /* ═══ PROJECT TABLE ══════════════════════════════════════════════ */
 .proj-table-wrap{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm)}
-.proj-table{width:max-content;min-width:100%;border-collapse:collapse}
+.proj-table{width:100%;min-width:max-content;border-collapse:collapse}
 .proj-table th{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);padding:9px 12px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
 .proj-table th:hover{background:var(--surface3)}
 .proj-table td{padding:11px 12px;font-size:14px;border-bottom:1px solid var(--border);vertical-align:middle}
@@ -1195,9 +1197,9 @@ body.print-person .card.pp-show{display:flex}
 .pvt-badge-por_venir{background:#EDE9FE;color:#4C1D95}
 /* Timeline bar */
 .pvt-timeline-bar{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;padding:0 6px}
-.pvt-bar-elaboracion{background:linear-gradient(90deg,#F59E0B,#FBBF24)}
+.pvt-bar-elaboracion{background:linear-gradient(90deg,#0A7AFF,#3D9BFF)}
 .pvt-bar-entregado{background:linear-gradient(90deg,#10B981,#34D399)}
-.pvt-bar-por_venir{background:linear-gradient(90deg,#6366F1,#818CF8)}
+.pvt-bar-por_venir{background:linear-gradient(90deg,#DC2626,#F05252)}
 /* Resource panel for preventa */
 .pvt-resource-section{margin-bottom:20px}
 .pvt-resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
@@ -2012,9 +2014,9 @@ header>*{position:relative;z-index:1}
 .pvt-gantt-header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0A7AFF,#00C5FF 45%,#30D158)}
 .pvt-gantt-col-day.is-today{color:#0A7AFF!important}
 .pvt-gantt-cell.is-today-col{background:#EBF4FF!important}
-.pvt-bar-por_venir{background:linear-gradient(90deg,#0A7AFF,#5EB9FF)!important}
-.pvt-status-por_venir{background:#0A7AFF!important}
-.pvt-badge-por_venir{background:#EBF4FF!important;color:#0A5CD6!important}
+.pvt-bar-por_venir{background:linear-gradient(90deg,#DC2626,#F05252)!important}
+.pvt-status-por_venir{background:#DC2626!important}
+.pvt-badge-por_venir{background:#FEE2E2!important;color:#991B1B!important}
 /* Tarjetas de informes */
 .pvt-card{border-radius:12px!important;border-color:#E6EBF3!important;padding:11px 13px!important;margin-bottom:6px!important}
 .pvt-card:hover{box-shadow:0 4px 14px rgba(10,22,40,.10)!important}
@@ -2417,6 +2419,29 @@ header>*{position:relative;z-index:1}
 @media(max-width:599px){.sc3-th-num{font-size:22px!important}.sc3-th-dow{font-size:10px!important;margin-right:4px}}
 /* La píldora flotante de autoguardado se reemplazó por el indicador del header */
 .autosave-pill{display:none!important}
+/* Filtro de equipo activo: azul sólido SIEMPRE (el hover lo destransparentaba) */
+.prf2-nav-btn[style*="background:#0A7AFF"],
+.prf2-nav-btn[style*="background:#0A7AFF"]:hover{
+  background:#0A7AFF!important;color:#fff!important;border-color:#0A7AFF!important;
+  box-shadow:0 2px 8px rgba(10,122,255,.3)!important;
+}
+.prf2-nav-btn[style*="background:#0A7AFF"] span{color:#fff!important}
+.prf2-nav-btn[style*="background:#0A7AFF"] span[style*="background:#E2E8F0"]{background:rgba(255,255,255,.25)!important}
+/* Tarjeta Σ de equipo: cromo platino, distinta a las individuales */
+.prf2-card-team{
+  border:2.5px solid transparent!important;
+  background:
+    linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(135deg,#8FA3BC,#E8EFF7 30%,#5F7288 50%,#E8EFF7 70%,#8FA3BC) border-box!important;
+  box-shadow:0 8px 26px rgba(30,41,59,.22)!important;
+}
+.prf2-card-team:hover{transform:none!important}
+.prf2-team-sheen::after{
+  content:'';position:absolute;top:0;bottom:0;width:55%;left:-60%;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.5) 50%,transparent);
+  animation:teamSheen 4.2s ease-in-out infinite;
+}
+@keyframes teamSheen{0%,55%{left:-60%}85%,100%{left:120%}}
 </style></head>
 <body>
 
@@ -3776,7 +3801,7 @@ function renderTecnicos(){
 function _cleanDemoV1(){
   // Migración de colores de equipo antiguos (apagados) → paleta viva
   try{
-    var MAPC={'#1B2D45':'#0A7AFF','#4B5320':'#10B981','#6B4226':'#F97316','#1A5276':'#8B5CF6','#7B1A2E':'#EC4899','#3C3D3A':'#06B6D4'};
+    var MAPC={'#1B2D45':'#0A7AFF','#4B5320':'#10B981','#6B4226':'#F97316','#1A5276':'#8B5CF6','#7B1A2E':'#E11D48','#EC4899':'#E11D48','#3C3D3A':'#06B6D4'};
     Object.values(prfTeams||{}).forEach(function(t){ if(MAPC[t.b]){ t.b=MAPC[t.b]; } });
   }catch(e){}
   // v2: además garantiza un ejemplo visible de Soporte
@@ -3957,8 +3982,8 @@ function renderProjTimeline(){
         ? '<span style="font-size:9px;font-weight:800;background:#FEE2E2;color:#B91C1C;padding:1px 7px;border-radius:100px">SIN INFORME</span>'
         : '<span style="font-size:9px;font-weight:800;background:#F1F5F9;color:#64748B;padding:1px 7px;border-radius:100px">INF. —</span>');
     var stripe=p.informe==='entregado'?'':'background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px);';
-    var esSop=p.tipo_sop?'border-left:3px solid #C40016;':'';
-    return '<div style="display:grid;grid-template-columns:230px 1fr;gap:0;border-bottom:1px solid #EEF2F7;align-items:stretch">'+
+    var esSop=p.tipo_sop?'border-left:3px solid #C40016;background:#FDF2F3;':'';
+    return '<div style="display:grid;grid-template-columns:230px 1fr;gap:0;border-bottom:1px solid #EEF2F7;align-items:stretch'+(p.tipo_sop?';background:rgba(196,0,22,.035)':'')+'">'+
       '<div style="padding:7px 10px;'+esSop+'min-width:0">'+
         '<div style="display:flex;align-items:center;gap:6px;min-width:0">'+
           '<span style="width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'+
@@ -5647,6 +5672,50 @@ function prfRender(){
   '</div>';
 
   var persons=f==='all'?prfPersons:prfPersons.filter(function(p){return String(p.eq)===f;});
+  // ── Tarjeta-resumen del EQUIPO (media justa de sus integrantes) ──
+  var teamCard='';
+  if(f!=='all'&&persons.length){
+    var tSel=prfTeams[parseInt(f)]||{name:'EQUIPO',b:'#0A7AFF'};
+    var dimsT=_prfGetDims();
+    var avgSkills={};
+    dimsT.forEach(function(d){
+      avgSkills[d.k]=Math.round(persons.reduce(function(a,p){return a+(Number((p.skills||{})[d.k])||0);},0)/persons.length*10)/10;
+    });
+    var poderes=persons.map(function(p){return _prfPoder2(p.skills||{});});
+    var poderMedio=Math.round(poderes.reduce(function(a,b){return a+b;},0)/poderes.length);
+    var pMin=Math.min.apply(null,poderes), pMax=Math.max.apply(null,poderes);
+    var brecha=pMax-pMin;
+    // Índice de equilibrio: 100 = todos iguales; castiga la brecha entre el más fuerte y el más débil
+    var equilibrio=Math.max(0,100-Math.round(brecha*100/ (pMax||1)));
+    var eqCol=equilibrio>=75?'#1B8A3E':(equilibrio>=50?'#B45309':'#B91C1C');
+    var radarT=_radarSvg(avgSkills,dimsT,235);
+    var barsT=dimsT.map(function(d){
+      var v=avgSkills[d.k]||0; var hc=_skillHeat(Math.round(v));
+      return '<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
+        '<span style="font-size:9.5px;font-weight:700;color:#64748B;width:78px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+escH(d.l)+'">'+escH(d.l)+'</span>'+
+        '<div style="flex:1;height:5px;background:#F1F5F9;border-radius:100px;overflow:hidden"><div style="height:100%;width:'+(v*10)+'%;background:'+hc+';border-radius:100px"></div></div>'+
+        '<b style="font-size:10.5px;color:'+hc+';width:22px;text-align:right">'+v+'</b></div>';
+    }).join('');
+    teamCard='<div class="prf2-card prf2-card-team" style="cursor:default" onclick="void(0)">'+
+      '<div class="prf2-team-sheen" style="background:linear-gradient(120deg,#1B2735 0%,#3A4A61 22%,#8FA3BC 38%,#E8EFF7 50%,#8FA3BC 62%,#3A4A61 78%,#1B2735 100%);padding:10px 14px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden">'+
+        '<div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,'+tSel.b+','+tSel.b+'99);box-shadow:0 0 0 1.5px rgba(255,255,255,.5),0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff">Σ</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:13.5px;font-weight:900;color:#0F172A;text-shadow:0 1px 0 rgba(255,255,255,.55)">EQUIPO '+escH(tSel.name)+' — Media combinada</div>'+
+          '<div style="font-size:10.5px;font-weight:700;color:#26354A;text-shadow:0 1px 0 rgba(255,255,255,.4)">'+persons.length+' integrante(s) · promedio por habilidad</div>'+
+        '</div>'+
+        '<div style="text-align:center;background:linear-gradient(180deg,#0F1B2C,#1B2A40);border-radius:10px;padding:5px 13px;box-shadow:0 0 0 1.5px rgba(255,255,255,.55),0 3px 8px rgba(0,0,0,.35)">'+
+          '<div style="font-size:22px;font-weight:900;color:#fff;line-height:1">'+poderMedio+'</div>'+
+          '<div style="font-size:8px;font-weight:800;color:#9FB4CE;letter-spacing:.08em">PODER MEDIO</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="padding:14px 4px 2px;display:flex;justify-content:center;background:linear-gradient(180deg,#FAFBFF,#fff)">'+radarT+'</div>'+
+      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 12px 8px;flex-wrap:wrap">'+
+        '<span style="font-size:10.5px;font-weight:800;background:#F1F5F9;color:#475569;padding:2px 9px;border-radius:100px" title="Poder del integrante más débil y más fuerte">Rango '+pMin+'–'+pMax+'</span>'+
+        '<span style="font-size:10.5px;font-weight:800;background:'+eqCol+'18;color:'+eqCol+';padding:2px 9px;border-radius:100px" title="100 = equipo parejo. Baja cuando hay mucha brecha entre el más fuerte y el más débil — úsalo para equiparar equipos">Equilibrio '+equilibrio+'%</span>'+
+      '</div>'+
+      '<div style="padding:8px 14px 12px">'+barsT+'</div>'+
+    '</div>';
+  }
   if(!persons.length){
     main.innerHTML='<div style="padding:48px;text-align:center;color:#94A3B8">'+
       '<div style="font-size:48px;margin-bottom:12px">👥</div>'+
@@ -5701,7 +5770,7 @@ function prfRender(){
       var d=(r[a.rol]!==undefined?r[a.rol]:1)-(r[b.rol]!==undefined?r[b.rol]:1);
       return d!==0?d:_prfPoder2(b.skills||{})-_prfPoder2(a.skills||{});
     });
-    html='<div class="prf2-cards-grid">'+ordered.map(_prfCard2).join('')+'</div>';
+    html='<div class="prf2-cards-grid">'+teamCard+ordered.map(_prfCard2).join('')+'</div>';
   }
   main.innerHTML=html;
 }
@@ -7375,7 +7444,7 @@ const PRF_BASE_TEAMS={
   2:{id:2,name:"NEXUS", slogan:"Cobertura total",       b:"#10B981",icon:"nexus", custom:false},
   3:{id:3,name:"DELTA", slogan:"Adaptable · Preciso",   b:"#F97316",icon:"delta", custom:false},
   4:{id:4,name:"APEX",  slogan:"Alto rendimiento",      b:"#8B5CF6",icon:"apex",  custom:false},
-  5:{id:5,name:"PULSO", slogan:"Velocidad de respuesta",b:"#EC4899",icon:"pulso", custom:false},
+  5:{id:5,name:"PULSO", slogan:"Velocidad de respuesta",b:"#E11D48",icon:"pulso", custom:false},
   6:{id:6,name:"VEGA",  slogan:"Excelencia técnica",    b:"#06B6D4",icon:"vega",  custom:false},
 };
 const PRF_BASE_DIMS=[
@@ -7952,9 +8021,9 @@ _syncTecnicos();
 // ════════════════════════════════════════════════════════════════════
 
 const PVT_STATUS = {
-  elaboracion: {label:'En elaboración', color:'#F59E0B', badgeBg:'#FEF3C7', badgeFg:'#92400E'},
+  elaboracion: {label:'En elaboración', color:'#0A7AFF', badgeBg:'#EBF4FF', badgeFg:'#0A5CD6'},
   entregado:   {label:'Entregado',       color:'#10B981', badgeBg:'#D1FAE5', badgeFg:'#065F46'},
-  por_venir:   {label:'Por venir',       color:'#6366F1', badgeBg:'#EDE9FE', badgeFg:'#4C1D95'},
+  por_venir:   {label:'Por venir',       color:'#DC2626', badgeBg:'#FEE2E2', badgeFg:'#991B1B'},
 };
 
 // Default data — informes de preventa de ejemplo
@@ -8197,29 +8266,32 @@ function renderPreventa(){
 function openPreventaModal(id){
   const p = id ? APP.state.preventa.find(x=>x.id===id) : null;
   const isNew = !p;
-  const data = p ? {...p} : {id:0,nombre:'',cliente:'',responsable:'',fecha_ini:_today(),fecha_entrega:'',status:'por_venir',notas:''};
-  const kamOptions = (APP.state.kams||[]).map(k=>`<option value="${escH(k)}" ${data.responsable===k?'selected':''}>${escH(k)}</option>`).join('');
-  const body = `<div class="modal-form" style="grid-template-columns:1fr;gap:14px">
-    <div class="mf"><label class="mf-label">Nombre del informe *</label>
-      <input class="mf-input" id="pvt-nombre" value="${escH(data.nombre)}" placeholder="Ej: Relevamiento BBVA Lima Norte"></div>
-    <div class="mf"><label class="mf-label">Cliente</label>
-      <input class="mf-input" id="pvt-cliente" value="${escH(data.cliente)}" placeholder="Nombre del cliente"></div>
-    <div class="mf"><label class="mf-label">KAM Responsable</label>
-      <select class="mf-select" id="pvt-resp">
-        <option value="">— Seleccionar KAM —</option>${kamOptions}
+  const data = p ? {...p} : {id:0,nombre:'',cliente:'',responsable:'',kam:'',fecha_ini:_today(),fecha_entrega:'',status:'por_venir',notas:''};
+  const teamOpts = (APP.state.preventa_team||[]).map(k=>`<option value="${escH(k)}" ${data.responsable===k?'selected':''}>${escH(k)}</option>`).join('');
+  const kamOpts = (APP.state.kams||[]).map(k=>`<option value="${escH(k)}" ${data.kam===k?'selected':''}>${escH(k)}</option>`).join('');
+  const body = `<div class="modal-form" style="grid-template-columns:1fr 1fr;gap:12px 14px">
+    <div class="mf" style="grid-column:1/-1"><label class="mf-lbl">Nombre del informe *</label>
+      <input class="mf-inp" id="pvt-nombre" value="${escH(data.nombre)}" placeholder="Ej: Relevamiento BBVA Lima Norte"></div>
+    <div class="mf"><label class="mf-lbl">Cliente</label>
+      <input class="mf-inp" id="pvt-cliente" value="${escH(data.cliente)}" placeholder="Nombre del cliente"></div>
+    <div class="mf"><label class="mf-lbl">Elaborado por · Preventa</label>
+      <select class="mf-inp" id="pvt-resp">
+        <option value="">— Seleccionar —</option>${teamOpts}
       </select></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="mf"><label class="mf-label">Fecha inicio</label>
-        <input class="mf-input" type="date" id="pvt-ini" value="${data.fecha_ini}"></div>
-      <div class="mf"><label class="mf-label">Fecha entrega *</label>
-        <input class="mf-input" type="date" id="pvt-fin" value="${data.fecha_entrega}"></div>
-    </div>
-    <div class="mf"><label class="mf-label">Estado</label>
-      <select class="mf-select" id="pvt-status">
+    <div class="mf"><label class="mf-lbl">KAM solicitante · Comercial</label>
+      <select class="mf-inp" id="pvt-kam">
+        <option value="">— Seleccionar KAM —</option>${kamOpts}
+      </select></div>
+    <div class="mf"><label class="mf-lbl">Estado</label>
+      <select class="mf-inp" id="pvt-status">
         ${Object.entries(PVT_STATUS).map(([k,v])=>`<option value="${k}" ${data.status===k?'selected':''}>${v.label}</option>`).join('')}
       </select></div>
-    <div class="mf"><label class="mf-label">Notas</label>
-      <textarea class="mf-textarea" id="pvt-notas" rows="2" placeholder="Observaciones del relevamiento...">${escH(data.notas||'')}</textarea></div>
+    <div class="mf"><label class="mf-lbl">Fecha inicio</label>
+      <input class="mf-inp" type="date" id="pvt-ini" value="${data.fecha_ini}"></div>
+    <div class="mf"><label class="mf-lbl">Fecha entrega *</label>
+      <input class="mf-inp" type="date" id="pvt-fin" value="${data.fecha_entrega}"></div>
+    <div class="mf" style="grid-column:1/-1"><label class="mf-lbl">Notas</label>
+      <textarea class="mf-inp" id="pvt-notas" rows="2" placeholder="Observaciones del relevamiento...">${escH(data.notas||'')}</textarea></div>
   </div>`;
   const ftr = `<div style="display:flex;gap:8px">
     <button class="tb-btn btn-primary" onclick="_savePreventaModal(${id||'null'})" style="flex:1;padding:10px;font-size:13px">💾 Guardar informe</button>
@@ -8238,6 +8310,7 @@ function _savePreventaModal(id){
     nombre,
     cliente:(document.getElementById('pvt-cliente')||{}).value?.trim()||'',
     responsable:(document.getElementById('pvt-resp')||{}).value||'',
+    kam:(document.getElementById('pvt-kam')||{}).value||'',
     fecha_ini:(document.getElementById('pvt-ini')||{}).value||_today(),
     fecha_entrega:fin,
     status:(document.getElementById('pvt-status')||{}).value||'por_venir',
@@ -8506,16 +8579,7 @@ pvtRenderResources = function(){
   </div>`;
 };
 
-// Also update dropdown in openPreventaModal to use preventa_team
-const _origOpenPreventaModal = openPreventaModal;
-openPreventaModal = function(id){
-  // Override responsable options to use preventa_team
-  const origKams = APP.state.kams;
-  const team = APP.state.preventa_team || [];
-  if(team.length) APP.state.kams = team;  // temporarily swap
-  _origOpenPreventaModal(id);
-  APP.state.kams = origKams;  // restore
-};
+// (El modal de preventa ya separa Elaborado por (equipo) y KAM solicitante)
 
 
 // ── Back to top button ────────────────────────────────────────────
@@ -8710,6 +8774,15 @@ _toggleAdmin = function(){
 
 let _loginCallback=null;
 function _showLoginModal(onSuccess){
+  // Con sesión activa de nivel 2+ NO se pide PIN: la contraseña ya se validó al entrar
+  if(_currentUser&&_userLevel>=2){
+    _isAdmin=true;
+    document.body.classList.remove('view-mode');
+    var _lb=document.getElementById('admin-lock-btn');
+    if(_lb){_lb.textContent='🔓';_lb.classList.add('unlocked');}
+    if(onSuccess){ try{onSuccess();}catch(e){} }
+    return;
+  }
   if(onSuccess) _loginCallback=onSuccess;
   const users = APP.state.admin_users || [];
   const userBtns = users.map((u,i)=>`
