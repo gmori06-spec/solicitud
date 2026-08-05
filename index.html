@@ -895,7 +895,8 @@ header, .hdr {
   .kpi-row { grid-template-columns: repeat(5, 1fr) !important; }
   .kpi-val { font-size: 38px !important; }
   /* Tabla proyectos visible en desktop */
-  .proj-table-wrap, .proj-table { display: block !important; }
+  .proj-table-wrap { display: block !important; }
+  .proj-table { display: table !important; width: 100% !important; }
   #proj-cards-mobile { display: none !important; }
   .modal { width: 700px !important; max-width: 700px !important; border-radius: 16px !important; }
   .modal-form { grid-template-columns: 1fr 1fr !important; }
@@ -2201,6 +2202,33 @@ header>*{position:relative;z-index:1}
 .sched-scroll,.sc3-scroll,.proj-table-wrap,.pvt-gantt-grid,.arch-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 #auth-user,#auth-pass{font-size:16px!important;min-height:44px}
 
+/* ── BUSCADOR GLOBAL ── */
+.gs-btn{width:34px;height:34px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#E2E8F0;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.gs-btn:hover{background:rgba(255,255,255,.16)}
+.gs-overlay{position:fixed;inset:0;background:rgba(10,22,40,.55);backdrop-filter:blur(3px);z-index:9000;display:none;align-items:flex-start;justify-content:center;padding:8vh 16px 16px}
+.gs-overlay.open{display:flex}
+.gs-panel{width:100%;max-width:680px;background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;display:flex;flex-direction:column;max-height:78vh}
+.gs-inputwrap{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #E2E8F0}
+.gs-input{flex:1;border:none;outline:none;font-size:17px;font-weight:600;color:var(--text);background:transparent;font-family:var(--font)}
+.gs-hint{font-size:10.5px;color:#94A3B8;background:#F1F5F9;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.gs-results{overflow-y:auto;padding:6px 0 12px}
+.gs-cat{font-size:10.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#94A3B8;padding:12px 18px 5px}
+.gs-item{display:flex;align-items:center;gap:11px;padding:8px 18px;cursor:pointer;transition:background .1s}
+.gs-item:hover{background:#F0F6FF}
+.gs-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;font-weight:800}
+.gs-t{flex:1;min-width:0}
+.gs-t b{display:block;font-size:13.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-t small{display:block;font-size:11px;color:#64748B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-tag{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:100px;flex-shrink:0}
+.gs-chips{display:flex;gap:6px;padding:10px 18px 4px;flex-wrap:wrap}
+.gs-chip{font-size:11px;font-weight:800;padding:4px 11px;border-radius:100px;border:1px solid #E2E8F0;background:#F8FAFC;color:#475569;cursor:pointer;transition:all .12s;white-space:nowrap}
+.gs-chip:hover{border-color:#0A7AFF;color:#0A5CD6}
+.gs-chip.on{background:#0A1628;border-color:#0A1628;color:#fff}
+.gs-quick{display:flex;gap:6px;padding:6px 18px 2px;flex-wrap:wrap}
+.gs-qk{font-size:11px;font-weight:700;padding:4px 11px;border-radius:8px;background:#EBF4FF;color:#0A5CD6;cursor:pointer;border:none;transition:background .12s}
+.gs-qk:hover{background:#D6E9FF}
+.gs-empty{padding:34px;text-align:center;color:#94A3B8;font-size:13.5px}
+@media(max-width:599px){.gs-overlay{padding:12px}.gs-panel{max-height:88vh}.gs-hint{display:none}}
 /* ── SOPORTES ── */
 .sop-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;padding:14px 16px;background:#fff;border-radius:var(--r) var(--r) 0 0;border:1px solid #E2E8F0;border-bottom:none}
 .sop-title{font-size:16px;font-weight:800;color:var(--text)}
@@ -2455,6 +2483,7 @@ header>*{position:relative;z-index:1}
     </div>
   </div>
   <div class="hdr-r">
+    <button class="gs-btn" onclick="gsOpen()" title="Buscador general (Ctrl+K)" aria-label="Buscar en todo el sistema">🔍</button>
     <span class="cloud-pill"><span class="cloud-dot" id="cloud-dot"></span><span id="cloud-lbl">Conectando…</span></span>
     <span class="hdr-save" id="hdr-save-state" title="Estado del guardado en la nube"></span>
     <span class="hdr-date" id="hdr-date">Cargando…</span>
@@ -2597,6 +2626,35 @@ header>*{position:relative;z-index:1}
 <!-- ╔══════ TAB: TIMELINE ══════╗ -->
 
 
+<!-- BUSCADOR GLOBAL -->
+<div class="gs-overlay" id="gs-overlay" onclick="if(event.target===this)gsClose()">
+  <div class="gs-panel">
+    <div class="gs-inputwrap">
+      <span style="font-size:16px">🔍</span>
+      <input class="gs-input" id="gs-input" placeholder="Buscar proyectos, soportes, técnicos, preventa, fechas…" oninput="gsRender()" autocomplete="off">
+      <span class="gs-hint">Esc para cerrar</span>
+    </div>
+    <div class="gs-chips" id="gs-chips">
+      <button class="gs-chip on" data-cat="*" onclick="gsSetCat('*')">Todo</button>
+      <button class="gs-chip" data-cat="Proyectos" onclick="gsSetCat('Proyectos')">📋 Proyectos</button>
+      <button class="gs-chip" data-cat="Soportes y Visitas" onclick="gsSetCat('Soportes y Visitas')">🛠 Soportes</button>
+      <button class="gs-chip" data-cat="Técnicos" onclick="gsSetCat('Técnicos')">👷 Técnicos</button>
+      <button class="gs-chip" data-cat="Preventa" onclick="gsSetCat('Preventa')">🔍 Preventa</button>
+      <button class="gs-chip" data-cat="Agenda / Asignaciones" onclick="gsSetCat('Agenda / Asignaciones')">📅 Agenda</button>
+      <button class="gs-chip" data-cat="Archivo (culminados)" onclick="gsSetCat('Archivo (culminados)')">🗂 Archivo</button>
+      <button class="gs-chip" data-cat="Historial de ediciones" onclick="gsSetCat('Historial de ediciones')">🕘 Historial</button>
+    </div>
+    <div class="gs-quick" id="gs-quick">
+      <button class="gs-qk" onclick="gsQuick('hoy')">📅 Hoy</button>
+      <button class="gs-qk" onclick="gsQuick('semana')">🗓 Esta semana</button>
+      <button class="gs-qk" onclick="gsQuick('ejecucion')">▶ En ejecución</button>
+      <button class="gs-qk" onclick="gsQuick('sininforme')">⚠ Sin informe</button>
+      <button class="gs-qk" onclick="gsQuick('libres')">✅ Técnicos libres</button>
+    </div>
+    <div class="gs-results" id="gs-results"><div class="gs-empty">Escribe para buscar en todo el sistema:<br>proyectos · soportes · preventa · técnicos · archivo · historial · fechas (ej. 05/08/2026)</div></div>
+  </div>
+</div>
+
 <!-- ╔══════ TAB: SOPORTES ══════╗ -->
 <div id="t-sop" class="tab-pane">
 <div class="wrap">
@@ -2654,31 +2712,7 @@ header>*{position:relative;z-index:1}
       <tbody id="arch-tbody"></tbody>
     </table>
   </div>
-    <!-- ── HISTORIAL DE EDICIONES ─────────────────────────────────── -->
-    <div style="margin-top:20px;border-top:2px solid #E2E8F0;padding-top:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:15px;font-weight:800;color:#0A1628;letter-spacing:-.01em">📋 Historial de Ediciones</span>
-          <span id="audit-count" style="font-size:12px;font-weight:700;color:#64748B;background:#F1F5F9;padding:2px 10px;border-radius:100px"></span>
-        </div>
-        <button onclick="_clearAudit()" class="tb-btn btn-danger btn-sm n4-only" style="font-size:12px">🗑 Limpiar historial</button>
-      </div>
-
-      <!-- Filters -->
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
-        <div style="flex:1;min-width:180px">
-          <div class="mf-lbl" style="margin-bottom:4px">🔍 Buscar por usuario</div>
-          <input class="mf-inp" id="audit-search-user" placeholder="Nombre o usuario..."
-            oninput="_renderAuditLog()" style="font-size:13px">
-        </div>
-        <span style="font-size:11px;color:var(--text3);align-self:center">Usa el filtro de fechas de arriba (Del … al …) — aplica al repositorio y al historial</span>
-        <button class="tb-btn btn-outline btn-sm" onclick="_resetAuditFilters()" style="font-size:12px">↺ Limpiar filtros</button>
-      </div>
-
-      <!-- Log list -->
-      <div id="audit-wrap">
-        <div style="padding:40px;text-align:center;color:#94A3B8;font-size:14px">Cargando historial…</div>
-      </div>
+    <!-- Historial de ediciones retirado de Archivo (la auditoría sigue registrándose; consultable con el buscador 🔍) -->
     </div>
 
 </div>
@@ -5125,6 +5159,161 @@ function doImport(){
   APP.importJSON(val);
 }
 
+// ── BUSCADOR GLOBAL ────────────────────────────
+function gsOpen(){
+  var ov=document.getElementById('gs-overlay'); if(!ov)return;
+  ov.classList.add('open');
+  var inp=document.getElementById('gs-input');
+  inp.value=''; gsRender();
+  window.setTimeout(function(){inp.focus();},50);
+}
+function gsClose(){ var ov=document.getElementById('gs-overlay'); if(ov)ov.classList.remove('open'); }
+document.addEventListener('keydown',function(e){
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();gsOpen();}
+  if(e.key==='Escape')gsClose();
+});
+function _gsParseDate(tok){
+  var m=tok.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(m)return m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+  if(/^\d{4}-\d{2}-\d{2}$/.test(tok))return tok;
+  return null;
+}
+function _gsGo(tab,after){
+  gsClose();
+  var b=document.querySelector('.tab-btn[data-tab="'+tab+'"]');
+  if(b)b.click();
+  if(after)window.setTimeout(after,120);
+}
+function _gsFmtF(a,b){ return (a||'')+(b?' → '+b:''); }
+window._gsCat='*'; window._gsQk=null;
+function gsSetCat(c){
+  window._gsCat=c;
+  document.querySelectorAll('#gs-chips .gs-chip').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-cat')===c);});
+  gsRender();
+}
+function _gsISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function gsQuick(k){
+  var inp=document.getElementById('gs-input');
+  window._gsQk=k;
+  if(k==='hoy'){var t=new Date();inp.value=String(t.getDate()).padStart(2,'0')+'/'+String(t.getMonth()+1).padStart(2,'0')+'/'+t.getFullYear();}
+  else if(k==='semana'){inp.value='';}
+  else if(k==='ejecucion'){inp.value='en ejecución';}
+  else if(k==='sininforme'){inp.value='falta informe';}
+  else if(k==='libres'){inp.value='';gsSetCat('Técnicos');window._gsQk='libres';}
+  gsRender(); inp.focus();
+}
+function gsRender(){
+  var qk=window._gsQk; window._gsQk=null;
+  var q=((document.getElementById('gs-input')||{}).value||'').trim().toLowerCase();
+  var box=document.getElementById('gs-results'); if(!box)return;
+  var wkRange=null;
+  if(qk==='semana'){
+    var now=new Date(), dow=(now.getDay()+6)%7;
+    var mon=new Date(now); mon.setDate(now.getDate()-dow);
+    var sun=new Date(mon); sun.setDate(mon.getDate()+6);
+    wkRange=[_gsISO(mon),_gsISO(sun)];
+  }
+  var onlyFree=(qk==='libres');
+  if(!q && !wkRange && !onlyFree){box.innerHTML='<div class="gs-empty">Escribe para buscar en todo el sistema:<br>proyectos · soportes · preventa · técnicos · archivo · historial · fechas (ej. 05/08/2026)</div>';return;}
+  var toks=q.split(/\s+/).filter(Boolean);
+  var dates=toks.map(_gsParseDate).filter(Boolean);
+  var txtToks=toks.filter(function(t){return !_gsParseDate(t);});
+  function hit(hay,fIni,fFin){
+    hay=(hay||'').toLowerCase();
+    if(wkRange){
+      var a=fIni||'', b=fFin||fIni||'';
+      if(!a) return false;
+      if(!(a<=wkRange[1] && b>=wkRange[0])) return false;
+    }
+    var okTxt=txtToks.every(function(t){return hay.indexOf(t)>=0;});
+    var okDate=!dates.length||dates.every(function(d){
+      if(fIni&&fFin)return fIni<=d&&d<=fFin;
+      if(fIni)return fIni===d;
+      return hay.indexOf(d)>=0;
+    });
+    return okTxt&&okDate;
+  }
+  var groups=[];
+  function grp(name,items){
+    if(window._gsCat!=='*' && name!==window._gsCat) return;
+    if(items.length)groups.push({name:name,items:items.slice(0,window._gsCat==='*'?8:30),total:items.length});
+  }
+  var tecName=function(id){var t=APP.state.tecnicos.find(function(x){return x.id===id;});return t?t.nombre:'';};
+  // Proyectos activos
+  grp('Proyectos', APP.activeProjects().filter(function(p){return !p.tipo_sop;}).filter(function(p){
+    var tecs=(p.tecs_ids||[]).map(tecName).join(' ');
+    return hit([p.nombre,p.descripcion,p.ubicacion,p.kam,statusLabel(p.status),p.informe,tecs,p.fecha_ini,p.fecha_fin].join(' '),p.fecha_ini,p.fecha_fin);
+  }).map(function(p){
+    return {ico:'📋',ib:'#EBF4FF',ic:'#0A5CD6',t:p.nombre,s:(p.kam?'KAM '+p.kam+' · ':'')+_gsFmtF(p.fecha_ini,p.fecha_fin),tag:statusLabel(p.status),tb:'#EBF4FF',tc:'#0A5CD6',go:function(){_gsGo('t-proj');}};
+  }));
+  // Soportes / Visitas
+  grp('Soportes y Visitas', APP.activeProjects().filter(function(p){return !!p.tipo_sop;}).filter(function(p){
+    var tecs=(p.tecs_ids||[]).map(tecName).join(' ');
+    return hit([p.nombre,p.descripcion,p.ubicacion,p.kam,statusLabel(p.status),p.tipo_sop==='visita_free'?'visita free':'soporte',tecs,p.fecha_ini,p.fecha_fin].join(' '),p.fecha_ini,p.fecha_fin);
+  }).map(function(p){
+    var vf=p.tipo_sop==='visita_free';
+    return {ico:'🛠',ib:vf?'#FDE8EA':'#C40016',ic:vf?'#C0392B':'#fff',t:p.nombre,s:(p.kam?'KAM '+p.kam+' · ':'')+_gsFmtF(p.fecha_ini,p.fecha_fin),tag:vf?'VISITA FREE':'SOPORTE',tb:vf?'#FDE8EA':'#C40016',tc:vf?'#C0392B':'#fff',go:function(){_gsGo('t-sop');}};
+  }));
+  // Preventa
+  grp('Preventa', (APP.state.preventa||[]).filter(function(p){
+    return hit([p.nombre,p.cliente,p.responsable,p.kam,(PVT_STATUS[p.status]||{}).label,p.notas,p.fecha_ini,p.fecha_entrega].join(' '),p.fecha_ini,p.fecha_entrega);
+  }).map(function(p){
+    var st=PVT_STATUS[p.status]||PVT_STATUS.por_venir;
+    return {ico:'🔍',ib:st.badgeBg,ic:st.badgeFg,t:p.nombre,s:(p.cliente?p.cliente+' · ':'')+(p.responsable||'')+' · entrega '+(p.fecha_entrega||'—'),tag:st.label,tb:st.badgeBg,tc:st.badgeFg,go:function(){_gsGo('t-preventa');}};
+  }));
+  // Técnicos
+  grp('Técnicos', (APP.state.tecnicos||[]).filter(function(t){
+    var pr=(typeof prfPersons!=='undefined'?prfPersons:[]).find(function(p){return p.prf_id===t.prf_id||((p.nombre||'')&&t.nombre.toLowerCase().indexOf(p.nombre.toLowerCase().split(' ')[0])>=0);})||{};
+    var team=(typeof prfTeams!=='undefined'&&prfTeams[pr.eq])?prfTeams[pr.eq].name:'';
+    t._gsx=[t.nombre,team,pr.rol,t.especialidad].join(' ');
+    return hit(t._gsx);
+  }).map(function(t){
+    var projs=APP.activeProjects().filter(function(p){return (p.tecs_ids||[]).indexOf(t.id)>=0;});
+    return {ico:'👷',ib:'#EEF2FF',ic:'#4338CA',t:t.nombre,s:projs.length?projs.length+' proyecto(s): '+projs.map(function(p){return p.nombre;}).join(', '):'Sin proyectos activos',tag:projs.length?'ASIGNADO':'LIBRE',tb:projs.length?'#EBF4FF':'#E9F9EF',tc:projs.length?'#0A5CD6':'#1B8A3E',go:function(){_gsGo('t-tec');}};
+  }));
+  // Asignaciones de calendario
+  grp('Agenda / Asignaciones', (APP.state.asignaciones||[]).filter(function(a){
+    var p=a.proj_id?APP.getProj(a.proj_id):null;
+    return hit([tecName(a.tec_id),p?p.nombre:'',a.tipo,a.fecha,a.nota].join(' '),a.fecha,a.fecha);
+  }).map(function(a){
+    var p=a.proj_id?APP.getProj(a.proj_id):null;
+    return {ico:'📅',ib:'#F0F9FF',ic:'#0369A1',t:tecName(a.tec_id)+(p?' — '+p.nombre:''),s:a.fecha+(a.hora_ini?' · '+a.hora_ini+'–'+(a.hora_fin||''):'')+(a.nota?' · '+a.nota:''),tag:(a.tipo||'DIA').toUpperCase(),tb:'#F1F5F9',tc:'#475569',go:function(){_gsGo('t-tec');}};
+  }));
+  // Archivo
+  grp('Archivo (culminados)', APP.archivedProjects().filter(function(p){
+    return hit([p.nombre,p.descripcion,p.kam,p.ubicacion,p.fecha_ini,p.fecha_fin].join(' '),p.fecha_ini,p.fecha_fin);
+  }).map(function(p){
+    return {ico:'🗂',ib:'#F1F5F9',ic:'#475569',t:p.nombre,s:(p.kam?'KAM '+p.kam+' · ':'')+_gsFmtF(p.fecha_ini,p.fecha_fin),tag:'CULMINADO',tb:'#E9F9EF',tc:'#1B8A3E',go:function(){_gsGo('t-arch');}};
+  }));
+  // Historial
+  var audit=[]; try{audit=JSON.parse(localStorage.getItem('gct_auditlog_v1')||'[]');}catch(e){}
+  grp('Historial de ediciones', audit.filter(function(h){
+    return hit([h.nombre_usuario,h.usuario,h.accion,h.proj_nombre,h.detalle,h.fecha].join(' '),h.fecha,h.fecha);
+  }).map(function(h){
+    return {ico:'🕘',ib:'#FFF7ED',ic:'#C2410C',t:(h.nombre_usuario||h.usuario||'')+' · '+(h.accion||''),s:(h.proj_nombre?h.proj_nombre+' · ':'')+(h.detalle||'')+' · '+(h.fecha||'')+' '+(h.hora||''),tag:'AUDIT',tb:'#FFF7ED',tc:'#C2410C',go:function(){_gsGo('t-arch');}};
+  }));
+  if(onlyFree){
+    groups=groups.map(function(g){
+      if(g.name!=='Técnicos')return g;
+      var its=g.items.filter(function(it){return it.tag==='LIBRE';});
+      return {name:'Técnicos libres',items:its,total:its.length};
+    }).filter(function(g){return g.items.length;});
+  }
+  if(!groups.length){box.innerHTML='<div class="gs-empty">Sin resultados para «'+escH(q)+'»</div>';return;}
+  window._gsActions=[];
+  box.innerHTML=groups.map(function(g){
+    return '<div class="gs-cat">'+g.name+(g.total>g.items.length?' · '+g.total+' resultados (mostrando '+g.items.length+')':' · '+g.total)+'</div>'+
+      g.items.map(function(it){
+        var idx=window._gsActions.push(it.go)-1;
+        return '<div class="gs-item" onclick="window._gsActions['+idx+']()">'+
+          '<div class="gs-ico" style="background:'+it.ib+';color:'+it.ic+'">'+it.ico+'</div>'+
+          '<div class="gs-t"><b>'+escH(it.t)+'</b><small>'+escH(it.s)+'</small></div>'+
+          '<span class="gs-tag" style="background:'+it.tb+';color:'+it.tc+'">'+escH(it.tag)+'</span>'+
+        '</div>';
+      }).join('');
+  }).join('');
+}
+
 // ── SOPORTES / VISITAS FREE ────────────────────
 window._sopNewTipo='';
 function openSopModal(tipo){
@@ -6494,9 +6683,10 @@ function _renderCargaView(){
     var libreIsSoon=libreIso&&!libreIsToday&&libreIso<=isoDate(today.getFullYear(),today.getMonth()+1,today.getDate()+7);
 
     // Status
-    var stColor=pct30<40?'#10B981':pct30<75?'#F59E0B':'#EF4444';
-    var stLabel=pct30<40?'Disponible':pct30<75?'Comprometido':'Saturado';
-    var stBg   =pct30<40?'#ECFDF5':pct30<75?'#FFFBEB':'#FEF2F2';
+    // Mapa de calor: verde (≤40%) → naranja (41–75%) → rojo (>75%)
+    var stColor=pct30<=40?'#16A34A':pct30<=75?'#EA7600':'#DC2626';
+    var stLabel=pct30<=40?'Disponible':pct30<=75?'Comprometido':'Saturado';
+    var stBg   =pct30<=40?'#EAF8EF':pct30<=75?'#FFF3E4':'#FDEAEA';
 
     // Leave upcoming
     var leaves=(APP.state.asignaciones||[]).filter(function(a){
@@ -6538,74 +6728,88 @@ function _renderCargaView(){
     }).join('');
 
     // Bar fill color by %
-    var barGrad='linear-gradient(90deg,'+r.stColor+','+r.stColor+'bb)';
+    // Barra con degradado tipo mapa de calor según nivel
+    var barGrad=r.pct30<=40?'linear-gradient(90deg,#34D399,#16A34A)':r.pct30<=75?'linear-gradient(90deg,#FBBF24,#EA7600)':'linear-gradient(90deg,#F87171,#DC2626)';
 
-    return '<div style="background:#fff;border-radius:14px;border:1px solid #E2E8F0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04)">'+
+    // Donut SVG del % — grande y protagonista
+    var R=26, C=2*Math.PI*R, off=C*(1-r.pct30/100);
+    var donut='<div style="position:relative;width:68px;height:68px;flex-shrink:0">'+
+      '<svg width="68" height="68" viewBox="0 0 68 68">'+
+        '<circle cx="34" cy="34" r="'+R+'" fill="none" stroke="#EEF2F6" stroke-width="7"></circle>'+
+        '<circle cx="34" cy="34" r="'+R+'" fill="none" stroke="'+r.stColor+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'" transform="rotate(-90 34 34)"></circle>'+
+      '</svg>'+
+      '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;line-height:1">'+
+        '<span style="font-size:18px;font-weight:900;color:'+r.stColor+'">'+r.pct30+'%</span>'+
+      '</div>'+
+    '</div>';
 
-      // ── Header strip ────────────────────────────────────────────────
-      '<div style="background:linear-gradient(135deg,'+r.teamColor+'22,'+r.teamColor+'08);padding:12px 16px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;border-top:3px solid '+r.teamColor+'">'+
-        '<div style="width:36px;height:36px;border-radius:50%;background:'+r.teamColor+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0">'+t.nombre.charAt(0)+'</div>'+
+    var rolKey=r.prf?r.prf.rol:null;
+    var rankBadge='';
+    if(rolKey==='JF'){rankBadge='<span style="font-size:11px;font-weight:900;letter-spacing:.04em;padding:3px 9px;border-radius:100px;background:linear-gradient(135deg,#FDE68A,#F59E0B);color:#5B3A00;border:1px solid #F1C232">★ JEFE</span>';}
+    else if(rolKey==='MD'){rankBadge='<span style="font-size:11px;font-weight:900;letter-spacing:.04em;padding:3px 9px;border-radius:100px;background:linear-gradient(135deg,#E9EEF4,#B8C4D0);color:#3A4756;border:1px solid #C6D0DA">◆ MID</span>';}
+    else if(rolKey==='JR'){rankBadge='<span style="font-size:11px;font-weight:900;letter-spacing:.04em;padding:3px 9px;border-radius:100px;background:#F3E8DD;color:#8A5A2B;border:1px solid #E2CBB0">● JUNIOR</span>';}
+
+    var dispTxt = r.activeProjs.length===0 ? 'Libre ahora' : (r.libreIsToday ? 'Libre hoy' : 'Libre el '+r.libre);
+    var dispColor = (r.activeProjs.length===0||r.libreIsToday)?'#16A34A':(r.libreIsSoon?'#D97706':'#64748B');
+
+    return '<div style="background:#fff;border-radius:14px;border:1px solid #EDF1F5;padding:16px;display:flex;flex-direction:column;gap:12px">'+
+
+      // ── Cabecera: avatar · nombre · donut grande ──
+      '<div style="display:flex;align-items:center;gap:12px">'+
         '<div style="flex:1;min-width:0">'+
-          '<div style="font-size:14px;font-weight:800;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escH(t.nombre)+'</div>'+
-          '<div style="display:flex;gap:4px;margin-top:2px;flex-wrap:wrap;align-items:center">'+
-            (r.team?'<span style="font-size:13px;font-weight:700;color:'+r.teamColor+';background:'+r.teamColor+'22;padding:1px 6px;border-radius:4px">'+escH(r.team.name)+'</span>':'')+
-            (r.rol?'<span style="font-size:13px;color:#64748B;font-weight:600">'+r.rol.l+'</span>':'')+
+          '<div style="display:flex;align-items:center;gap:8px">'+
+            '<div style="width:30px;height:30px;border-radius:50%;background:'+r.teamColor+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">'+t.nombre.charAt(0)+'</div>'+
+            '<div style="min-width:0">'+
+              '<div style="font-size:14.5px;font-weight:800;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escH(t.nombre)+'</div>'+
+              '<div style="font-size:11.5px;color:#8A94A6;font-weight:600">'+
+                (r.team?'<span style="color:'+r.teamColor+'">'+escH(r.team.name)+'</span>':'')+
+                (r.prf&&r.prf.edad?(r.team?' · ':'')+r.prf.edad+' años':'')+
+                (r.poder?' · ⚡ '+r.poder:'')+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+          '<div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">'+rankBadge+
+            '<span style="font-size:11.5px;font-weight:800;color:'+r.stColor+';background:'+r.stBg+';padding:3px 9px;border-radius:100px">'+r.stLabel+'</span>'+
           '</div>'+
         '</div>'+
-        // Big % + status
-        '<div style="text-align:right;flex-shrink:0">'+
-          '<div style="font-size:28px;font-weight:900;color:'+r.stColor+';line-height:1">'+r.pct30+'%</div>'+
-          '<div style="font-size:13px;font-weight:700;color:'+r.stColor+';background:'+r.stBg+';padding:2px 6px;border-radius:100px;margin-top:3px;white-space:nowrap">'+r.stLabel+'</div>'+
+        donut+
+      '</div>'+
+
+      // ── Disponibilidad ──
+      '<div style="font-size:12.5px;font-weight:700;color:'+dispColor+'">'+escH(dispTxt)+'</div>'+
+
+      // ── Barra única 30 días, con nota del mes ──
+      '<div>'+
+        '<div style="height:7px;background:#F1F5F9;border-radius:4px;overflow:hidden">'+
+          '<div style="height:100%;width:'+r.pct30+'%;background:'+barGrad+';border-radius:4px;transition:width .5s ease"></div>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11.5px;color:#9AA5B5;font-weight:600">'+
+          '<span>'+r.busy30+' de 30 días ocupados</span>'+
+          '<span>mes: '+r.busyMo+'/'+r.dim+'</span>'+
         '</div>'+
       '</div>'+
 
-      // ── Body ────────────────────────────────────────────────────────
-      '<div style="padding:14px 16px">'+
+      (r.leaves.length?'<div style="display:flex;gap:5px;flex-wrap:wrap">'+leaveBadges+'</div>':'')+
 
-        // Progress bar — 30 days
-        '<div style="margin-bottom:12px">'+
-          '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'+
-            '<span style="font-size:14px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.3px">Próximos 30 días</span>'+
-            '<span style="font-size:13px;color:#64748B;font-weight:600">'+r.busy30+' asignados · '+(30-r.busy30)+' libres</span>'+
-          '</div>'+
-          '<div style="height:10px;background:#F1F5F9;border-radius:5px;overflow:hidden;position:relative">'+
-            '<div style="position:absolute;left:0;top:0;height:100%;width:'+r.pct30+'%;background:'+barGrad+';border-radius:5px;transition:width .5s ease"></div>'+
-          '</div>'+
-        '</div>'+
-
-        // Progress bar — this month
-        '<div style="margin-bottom:14px">'+
-          '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'+
-            '<span style="font-size:14px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.3px">Este mes</span>'+
-            '<span style="font-size:13px;color:#64748B;font-weight:600">'+r.busyMo+'/'+r.dim+' días · '+r.pctMo+'%</span>'+
-          '</div>'+
-          '<div style="height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden;position:relative">'+
-            '<div style="position:absolute;left:0;top:0;height:100%;width:'+r.pctMo+'%;background:#6366F1;opacity:.7;border-radius:3px;transition:width .5s ease"></div>'+
-          '</div>'+
-        '</div>'+
-
-        // Libre desde
-        '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:'+(r.libreIsToday?'#F0FDF4':r.libreIsSoon?'#FFFBEB':'#F8FAFC')+';border:1px solid '+(r.libreIsToday?'#86EFAC':r.libreIsSoon?'#FDE68A':'#E2E8F0')+';margin-bottom:12px">'+
-          '<div>'+
-            '<div style="font-size:13px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px">Disponible desde</div>'+
-            '<div style="font-size:15px;font-weight:900;color:'+(r.libreIsToday?'#16A34A':r.libreIsSoon?'#D97706':'#0F172A')+'">'+escH(r.libre)+'</div>'+
-          '</div>'+
-          (r.activeProjs.length===0?
-            '<div style="margin-left:auto;font-size:14px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:4px 10px;border-radius:100px">Libre ahora</div>':
-          r.libreIsToday?
-            '<div style="margin-left:auto;font-size:14px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:4px 10px;border-radius:100px">Hoy</div>':'')+'</div>'+
-
-        (r.leaves.length?'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">'+leaveBadges+'</div>':'')+
-
-        // Active projects
-        (r.activeProjs.length?
-          '<div>'+
-            '<div style="font-size:13px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">'+r.activeProjs.length+' proyecto'+(r.activeProjs.length!==1?'s':'')+' activo'+(r.activeProjs.length!==1?'s':'')+'</div>'+
-            projChips+
-          '</div>':
-          '<div style="font-size:14px;color:#CBD5E1;text-align:center;padding:10px 0;font-style:italic">Sin proyectos asignados</div>'
-        )+
-      '</div>'+
+      // ── Proyectos como líneas ligeras con punto de color ──
+      (r.activeProjs.length?
+        '<div style="border-top:1px solid #F2F5F8;padding-top:10px;display:flex;flex-direction:column;gap:6px">'+
+          r.activeProjs.slice(0,4).map(function(p){
+            var c=projColorMap[p.id]||'#64748B';
+            var nm=p.nombre.length>22?p.nombre.slice(0,22)+'…':p.nombre;
+            var daysLeft=p.fecha_fin?Math.round((new Date(p.fecha_fin)-today)/86400000):null;
+            var dTxt=daysLeft===null?'':(daysLeft<0?'vencido':daysLeft+'d');
+            var dCol=daysLeft===null?'#94A3B8':(daysLeft<0?'#EF4444':daysLeft<14?'#D97706':'#94A3B8');
+            return '<div style="display:flex;align-items:center;gap:7px">'+
+              '<span style="width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'+
+              '<span style="font-size:12.5px;font-weight:600;color:#334155;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escH(nm)+'</span>'+
+              (dTxt?'<span style="font-size:11px;font-weight:700;color:'+dCol+'">'+dTxt+'</span>':'')+
+            '</div>';
+          }).join('')+
+          (r.activeProjs.length>4?'<div style="font-size:11.5px;color:#9AA5B5;padding-left:15px">+'+(r.activeProjs.length-4)+' más</div>':'')+
+        '</div>':
+        '<div style="border-top:1px solid #F2F5F8;padding-top:10px;font-size:12.5px;color:#B6C0CC;text-align:center">Sin proyectos asignados</div>'
+      )+
     '</div>';
   }).join('');
 
