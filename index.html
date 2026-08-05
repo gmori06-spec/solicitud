@@ -7611,8 +7611,15 @@ function _toggleAdmin(){
   }
 }
 
-// Init: start in view mode, check URL for admin
-document.body.classList.add('view-mode');
+// Init: start in view mode SOLO si no hay sesión activa con nivel de edición
+if(!(typeof _currentUser!=='undefined' && _currentUser && _userLevel>=2)){
+  document.body.classList.add('view-mode');
+}else{
+  _isAdmin=true;
+  document.body.classList.remove('view-mode');
+  var _lb0=document.getElementById('admin-lock-btn');
+  if(_lb0){_lb0.textContent='🔓';_lb0.classList.add('unlocked');}
+}
 (function(){
   const _ua=null; // puerta trasera ?admin= deshabilitada: el acceso es solo por login
   if(_ua){
