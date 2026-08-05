@@ -2815,9 +2815,12 @@ header>*{position:relative;z-index:1}
 <script data-cfasync="false" src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script data-cfasync="false">
   const _fbCfg={apiKey:"AIzaSyD-WkS0jxXmn2_2BeFmt3uOnTlnd9xk8P0",authDomain:"calendar-tecnicos-proyectos.firebaseapp.com",projectId:"calendar-tecnicos-proyectos",storageBucket:"calendar-tecnicos-proyectos.firebasestorage.app",messagingSenderId:"688375276050",appId:"1:688375276050:web:0dc70c3c1b6fbd9227aecb"};
-  let _DOC;
-  try{firebase.initializeApp(_fbCfg);const _db=firebase.firestore();_DOC=_db.collection('gct-ops').doc('state');}
-  catch(e){_DOC={get:()=>Promise.reject(new Error('o')),set:()=>Promise.reject(new Error('o')),onSnapshot:()=>()=>{}};}
+  let _DOC, _DOC_LEGACY;
+  try{firebase.initializeApp(_fbCfg);const _db=firebase.firestore();
+    // Documento propio de ESTA versión (GitHub/Vercel) — independiente de la versión antigua de Cloudflare
+    _DOC=_db.collection('gct-ops').doc('state_oficial_v4');
+    _DOC_LEGACY=_db.collection('gct-ops').doc('state');}
+  catch(e){_DOC={get:()=>Promise.reject(new Error('o')),set:()=>Promise.reject(new Error('o')),onSnapshot:()=>()=>{}};_DOC_LEGACY=null;}
 </script>
 <script>var _schedView='week';
 var _schedOffset=0;
@@ -7500,6 +7503,19 @@ function _applyData(d){
 // Load from Firebase, then start real-time listener
 _setCloud('loading');
 try { _DOC.get()
+  .then(doc=>{
+    // Migración única: si el documento nuevo aún no existe, copiar los datos del antiguo y seguir aparte
+    if(!doc.exists && typeof _DOC_LEGACY!=='undefined' && _DOC_LEGACY){
+      return _DOC_LEGACY.get().then(function(old){
+        if(old.exists){
+          var d=old.data();
+          return _DOC.set(d).then(function(){ toast('✓ Datos migrados a la base propia de esta versión','ok'); return {exists:true,data:function(){return d;}}; });
+        }
+        return doc;
+      }).catch(function(){ return doc; });
+    }
+    return doc;
+  })
   .then(doc=>{
     var cloud=doc.exists?doc.data():null;
     var local=null;
