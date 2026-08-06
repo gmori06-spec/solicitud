@@ -62,7 +62,7 @@ header{
   display:flex;align-items:center;padding:0 18px;gap:10px;
   justify-content:space-between;
 }
-.hdr-l{display:flex;align-items:center;gap:10px;min-width:0}
+.hdr-l{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden}
 .pulse{
   width:28px;height:28px;border-radius:7px;
   background:linear-gradient(135deg,#0A7AFF,#00C5FF);
@@ -2339,6 +2339,19 @@ header>*{position:relative;z-index:1}
 /* Separador visual entre grupos */
 .hdr-sep{width:1px;height:20px;background:rgba(255,255,255,.12);flex-shrink:0}
 @media(max-width:640px){.hdr-sep{display:none}}
+/* ── Header progresivo: se compacta por etapas para NUNCA montarse ── */
+@media(max-width:1180px){
+  .hdr-date{display:none!important}
+}
+@media(max-width:980px){
+  .cloud-pill #cloud-lbl{display:none!important}
+  .cloud-pill{padding:5px 8px!important}
+  .hdr-save{font-size:0!important;padding:5px 8px!important;min-width:0}
+  .hdr-save::after{content:'●';font-size:11px}
+  .user-pill .user-name,.user-pill .user-nivel,.user-pill>div:last-child{display:none!important}
+  .user-pill{padding:3px!important;gap:0!important}
+  .hdr-sub{display:none!important}
+}
 /* Rango de técnico junto al nombre: solo Jefe/Mid */
 .tec-rank{display:inline-block;margin-left:3px;font-size:10px;line-height:1;vertical-align:1px}
 .rk-jefe{color:#D97706;text-shadow:0 0 4px rgba(245,158,11,.45)}
