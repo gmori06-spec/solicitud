@@ -3644,6 +3644,8 @@ function _rptImpl(){
             
             <div class="ef"><label class="ef-lbl">Fecha Inicio</label><input class="ef-inp" type="date" value="${p.fecha_ini}" onchange="quickUpdate(${p.id},'fecha_ini',this.value)"></div>
             <div class="ef"><label class="ef-lbl">Fecha Fin</label><input class="ef-inp" type="date" value="${p.fecha_fin}" onchange="quickUpdate(${p.id},'fecha_fin',this.value)"></div>
+            <div class="ef"><label class="ef-lbl">Horario — inicio</label><input class="ef-inp" type="time" value="${p.hora_ini||'08:00'}" onchange="quickUpdate(${p.id},'hora_ini',this.value)"></div>
+            <div class="ef"><label class="ef-lbl">Horario — fin</label><input class="ef-inp" type="time" value="${p.hora_fin||'18:00'}" onchange="quickUpdate(${p.id},'hora_fin',this.value)"></div>
             <div class="ef"><label class="ef-lbl">Estado</label><select class="ef-inp ef-sel" onchange="quickUpdate(${p.id},'status',this.value)">${['ejecucion','confirmado','pendiente'].map(s=>`<option value="${s}"${p.status===s?' selected':''}>${statusLabel(s)}</option>`).join('')}</select></div>
             <div class="ef"><label class="ef-lbl">Valor est. (USD)</label><input class="ef-inp" type="number" value="${p.valor_est||0}" onchange="quickUpdate(${p.id},'valor_est',+this.value)" placeholder="0"></div>
 
@@ -8524,6 +8526,12 @@ function openPreventaModal(id){
       </select></div>
     <div class="mf"><label class="mf-lbl">Fecha inicio</label>
       <input class="mf-inp" type="date" id="pvt-ini" value="${data.fecha_ini}"></div>
+    <div class="mf"><label class="mf-lbl">Horario laboral</label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input class="mf-inp" type="time" id="pvt-hini" value="${data.hora_ini||'08:00'}" style="flex:1">
+        <span style="color:#94A3B8">–</span>
+        <input class="mf-inp" type="time" id="pvt-hfin" value="${data.hora_fin||'18:00'}" style="flex:1">
+      </div></div>
     <div class="mf"><label class="mf-lbl">Fecha entrega *</label>
       <input class="mf-inp" type="date" id="pvt-fin" value="${data.fecha_entrega}"></div>
     <div class="mf" style="grid-column:1/-1"><label class="mf-lbl">Notas</label>
@@ -8548,6 +8556,8 @@ function _savePreventaModal(id){
     responsable:(document.getElementById('pvt-resp')||{}).value||'',
     kam:(document.getElementById('pvt-kam')||{}).value||'',
     fecha_ini:(document.getElementById('pvt-ini')||{}).value||_today(),
+    hora_ini:(document.getElementById('pvt-hini')||{}).value||'08:00',
+    hora_fin:(document.getElementById('pvt-hfin')||{}).value||'18:00',
     fecha_entrega:fin,
     status:(document.getElementById('pvt-status')||{}).value||'por_venir',
     notas:(document.getElementById('pvt-notas')||{}).value?.trim()||'',
