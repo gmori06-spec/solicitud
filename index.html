@@ -1209,7 +1209,7 @@ body.print-person .card.pp-show{display:flex}
 /* Gantt rows */
 .pvt-gantt-grid{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .pvt-gantt-table{min-width:600px;width:100%;border-collapse:collapse}
-.pvt-gantt-col-label{width:180px;font-size:13px;font-weight:600;color:#475569;padding:8px 12px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.pvt-gantt-col-label{width:180px;font-size:13px;font-weight:600;color:#475569;padding:8px 12px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;position:sticky;left:0;z-index:2;background:#fff;box-shadow:2px 0 4px rgba(15,23,42,.05)}
 .pvt-gantt-col-label small{display:block;font-size:14px;color:#94A3B8;font-weight:400}
 .pvt-gantt-col-day{text-align:center;font-size:13px;font-weight:600;color:#94A3B8;padding:4px 0;border-bottom:1px solid #F1F5F9;min-width:26px}
 .pvt-gantt-col-day.is-today{color:#2563EB;font-weight:800}
@@ -2583,9 +2583,21 @@ header>*{position:relative;z-index:1}
 <!-- ╔══════ TAB: TÉCNICOS ══════╗ -->
 <div id="t-tec" class="tab-pane">
 <div class="wrap">
-  <div class="toolbar">
-    <div class="toolbar-l">
+  <div class="toolbar" style="justify-content:center">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;width:100%">
       <button class="edit-only tb-btn btn-primary" onclick="openTecnicoModal()">＋ Nuevo Técnico</button>
+      <div class="sc3-view-switcher" style="background:#0F172A;border-radius:100px;padding:3px">
+        <button id="sv-3d"   class="sc3-vsw-btn" onclick="_schedSetView('3d')">3 días</button>
+        <button id="sv-week" class="sc3-vsw-btn" onclick="_schedSetView('week')">Semana</button>
+        <button id="sv-month"class="sc3-vsw-btn" onclick="_schedSetView('month')">Mes</button>
+        <button id="sv-year" class="sc3-vsw-btn" onclick="_schedSetView('year')">Año</button>
+        <button id="sv-carga" class="sc3-vsw-btn" style="background:#0A7AFF;color:#fff;font-weight:700" onclick="_schedSetView('carga')">Carga</button>
+      </div>
+      <div class="sc3-nav-row" style="background:#0F172A;border-radius:100px;padding:3px 6px">
+        <button class="sc3-nav-btn" onclick="_schedNav(-1)" aria-label="Anterior">&#8249;</button>
+        <span id="sched-period-label" class="sc3-period-label" style="display:none">—</span>
+        <button class="sc3-nav-btn" onclick="_schedNav(1)" aria-label="Siguiente">&#8250;</button>
+      </div>
     </div>
   </div>
   <div class="tech-grid" id="tech-grid"></div>
@@ -2595,20 +2607,7 @@ header>*{position:relative;z-index:1}
         <div class="sc3-palette-row" style="flex:1;min-width:220px" title="Arrastra un proyecto a un técnico · Clic en una celda para asignar">
           <div id="sched-palette" class="sc3-palette"></div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
-          <div class="sc3-view-switcher">
-            <button id="sv-3d"   class="sc3-vsw-btn" onclick="_schedSetView('3d')">3 días</button>
-            <button id="sv-week" class="sc3-vsw-btn" onclick="_schedSetView('week')">Semana</button>
-            <button id="sv-month"class="sc3-vsw-btn" onclick="_schedSetView('month')">Mes</button>
-            <button id="sv-year" class="sc3-vsw-btn" onclick="_schedSetView('year')">Año</button>
-            <button id="sv-carga" class="sc3-vsw-btn" style="background:#0A7AFF;color:#fff;font-weight:700" onclick="_schedSetView('carga')">Carga</button>
-          </div>
-          <div class="sc3-nav-row">
-            <button class="sc3-nav-btn" onclick="_schedNav(-1)" aria-label="Anterior">&#8249;</button>
-            <span id="sched-period-label" class="sc3-period-label">—</span>
-            <button class="sc3-nav-btn" onclick="_schedNav(1)" aria-label="Siguiente">&#8250;</button>
-          </div>
-        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0"></div>
       </div>
       <div id="sched-proj-legend-row" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0">
         <span class="sc3-palette-label">En calendario:</span>
@@ -2666,7 +2665,8 @@ header>*{position:relative;z-index:1}
     <input type="text" id="sop-search" class="search-inp" placeholder="Buscar soporte o visita…" style="max-width:240px" oninput="renderSoportes()">
     <div style="display:flex;gap:8px" class="edit-only">
       <button class="tb-btn" style="background:#C40016;color:#fff" onclick="openSopModal('soporte')">➕ Soporte</button>
-      <button class="tb-btn" style="background:#FDE8EA;color:#C40016;border:1px solid #F5B8C0" onclick="openSopModal('visita_free')">➕ Visita Free</button>
+      <button class="tb-btn" style="background:#F97316;color:#fff" onclick="openSopModal('visita_free')">➕ Visita Free</button>
+      <button class="tb-btn" style="background:#16A34A;color:#fff" onclick="openSopModal('mantenimiento')">➕ Mantenimiento</button>
     </div>
   </div>
   <div id="sop-table"></div>
@@ -2712,6 +2712,24 @@ header>*{position:relative;z-index:1}
       <tbody id="arch-tbody"></tbody>
     </table>
   </div>
+    <div id="arch-preventa"></div>
+    <!-- ── HISTORIAL COMPLETO DE MOVIMIENTOS (agrupado por proyecto, desplegable) ── -->
+    <div style="margin-top:20px;border-top:2px solid #E2E8F0;padding-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:15px;font-weight:800;color:#0A1628;letter-spacing:-.01em">📋 Historial de movimientos</span>
+          <span id="audit-count" style="font-size:12px;font-weight:700;color:#64748B;background:#F1F5F9;padding:2px 10px;border-radius:100px"></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input class="search-inp" id="audit-search-user" placeholder="Filtrar por usuario…" oninput="_renderAuditLog()" style="max-width:170px">
+          <input class="search-inp" id="audit-search-proj" placeholder="Filtrar por proyecto…" oninput="_renderAuditLog()" style="max-width:180px">
+          <button class="tb-btn btn-outline btn-sm" onclick="_exportAuditCSV()" title="Descargar todo el historial para análisis">⬇ Exportar historial</button>
+          <button onclick="_clearAudit()" class="tb-btn btn-danger btn-sm n4-only">🗑 Limpiar</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#94A3B8;margin-bottom:10px">Registra TODO: creaciones, ediciones, ingresos de datos, cambios de estado/fase, asignaciones, culminaciones y eliminaciones · agrupado por proyecto — clic en un proyecto para desplegar su detalle · usa el filtro de fechas de arriba (Del … al …)</div>
+      <div id="audit-wrap"><div style="padding:30px;text-align:center;color:#94A3B8;font-size:13px">Cargando historial…</div></div>
+    </div>
     <!-- Historial de ediciones retirado de Archivo (la auditoría sigue registrándose; consultable con el buscador 🔍) -->
     </div>
 
@@ -2788,8 +2806,8 @@ header>*{position:relative;z-index:1}
         <input type="date" class="drf-input" id="pvt-filter-to" onchange="renderPreventa()">
       </div>
       <div class="drf-presets">
-        <button class="drf-preset" onclick="setDateFilter('pvt','week')">Esta semana</button>
-        <button class="drf-preset active" onclick="setDateFilter('pvt','month')">Este mes</button>
+        <button class="drf-preset active" onclick="setDateFilter('pvt','week')">Esta semana</button>
+        <button class="drf-preset" onclick="setDateFilter('pvt','month')">Este mes</button>
         <button class="drf-preset" onclick="setDateFilter('pvt','quarter')">Q3 2026</button>
         <button class="drf-preset" onclick="setDateFilter('pvt','all')">Todo</button>
       </div>
@@ -2967,25 +2985,7 @@ const APP = {
       {id:9,nombre:'David',especialidad:'BDA / RF',telefono:'',activo:true},
     ];
     this.state.projects = [
-      {id:1,nombre:'MGP',descripcion:'5 Sedes',ubicacion:'Lima — 5 sedes',kam:'Humberto Vega',dias:30,tecs_req:4,tecs_ids:[6,7,8,9],fecha_ini:'2026-07-07',fecha_fin:'2026-08-15',status:'ejecucion',prioridad:5,notas:'En primera sede. 5 sedes total. Luis-Wilter-Yeltsin-David.',archived:false,fecha_arch:'',
-        valor_est:32000,pipeline_est:32000,tipo_cli:'GRAN EMPRESA',contrato:true,recurrente:true,nota_comercial:'5 sedes = contrato de rollout. Gobierno o empresa grande con múltiples instalaciones. Asegurar acta por sede para facturación parcial.'},
-      {id:2,nombre:'Cía. Hernández',descripcion:'Instalación Sistema',ubicacion:'San Isidro',kam:'Cristhian Benavides',dias:6,tecs_req:2,tecs_ids:[3,4],fecha_ini:'2026-07-14',fecha_fin:'2026-07-20',status:'ejecucion',prioridad:3,notas:'Iniciado hoy 14.07. Cierre previsto 20.07.',archived:false,fecha_arch:'',
-        valor_est:11000,pipeline_est:11000,tipo_cli:'EMPRESA',contrato:false,recurrente:false,nota_comercial:'Empresa privada San Isidro. Sin información de recurrencia. Confirmar OC / contrato antes de cerrar acta.'},
-      {id:3,nombre:'BBVA',descripcion:'Oficina Mall Santa Anita',ubicacion:'Lima — Santa Anita',kam:'Humberto Vega',dias:1,tecs_req:2,tecs_ids:[8,9],fecha_ini:'2026-07-15',fecha_fin:'2026-07-15',status:'confirmado',prioridad:1,notas:'OC para 12 oficinas. ⚠ CONFLICTO: Yeltsin y David están en MGP.',archived:false,fecha_arch:'',
-        valor_est:6500,pipeline_est:78000,tipo_cli:'BANCA MAYOR',contrato:true,recurrente:true,nota_comercial:'Cliente histórico TELECOM. OC firmada para 12 oficinas = $78K garantizados. Ejecutar sin falla = palanca para acelerar las 11 restantes. MÁXIMA PRIORIDAD económica.'},
-      {id:4,nombre:'Biswanger',descripcion:'Instalación Sistema',ubicacion:'La Molina',kam:'Cristhian Benavides',dias:4,tecs_req:2,tecs_ids:[1,2],fecha_ini:'2026-07-09',fecha_fin:'2026-07-15',status:'ejecucion',prioridad:6,notas:'Último día mañana 15.07. Irving + Ricardo → propuesta Agrolatina post-cierre.',archived:false,fecha_arch:'',
-        valor_est:7500,pipeline_est:15000,tipo_cli:'INMOBILIARIA',contrato:false,recurrente:true,nota_comercial:'Biswanger = inmobiliaria internacional con múltiples edificios en Lima. Alta probabilidad de recurrencia. Cristhian debe proponer programa de edificios adicionales en el cierre.'},
-      {id:5,nombre:'Caja Arequipa',descripcion:'Agencia Iquitos',ubicacion:'Iquitos',kam:'Patricia Grandez',dias:2,tecs_req:1,tecs_ids:[5],fecha_ini:'2026-07-16',fecha_fin:'2026-07-17',status:'confirmado',prioridad:4,notas:'3 agencias total por confirmar. Acceso solo aéreo.',archived:false,fecha_arch:'',
-        valor_est:4500,pipeline_est:13500,tipo_cli:'BANCA REGIONAL',contrato:false,recurrente:true,nota_comercial:'Caja Arequipa tiene presencia en múltiples ciudades. 3 agencias en pipeline ($13.5K). Documentar perfectamente para acelerar OC de agencias 2 y 3. Patricia debe gestionar propuesta esta semana.'},
-      {id:6,nombre:'Agrolatina',descripcion:'Instalación Sistema Outdoor',ubicacion:'Ica',kam:'Patricia Grandez',dias:2,tecs_req:2,tecs_ids:[],fecha_ini:'2026-07-17',fecha_fin:'2026-07-18',status:'pendiente',prioridad:2,notas:'SIN TÉCNICO. Propuesta: Irving + Ricardo (liberan Biswanger 15.07). Viaje Ica 16 tarde.',archived:false,fecha_arch:'',
-        valor_est:8500,pipeline_est:8500,tipo_cli:'AGROINDUSTRIA',contrato:false,recurrente:false,nota_comercial:'Sistema outdoor especializado = mayor margen que instalación estándar. Sin información de expansión. Riesgo operacional alto (sin técnico asignado). Resolver hoy.'},
-      {id:7,nombre:'Compartamos Banco',descripcion:'Agencia Huancayo',ubicacion:'Huancayo',kam:'Cristhian Benavides',dias:1,tecs_req:1,tecs_ids:[],fecha_ini:'',fecha_fin:'',status:'pendiente',prioridad:7,notas:'Sin fecha. Pipeline: banco con red nacional de agencias.',archived:false,fecha_arch:'',
-        valor_est:4000,pipeline_est:400000,tipo_cli:'BANCA NACIONAL',contrato:false,recurrente:true,nota_comercial:'MAYOR POTENCIAL DE ESCALA. Compartamos Banco opera +200 agencias a nivel nacional. Si se cierra programa = $400K+ en pipeline. Cristhian debe ir con propuesta de programa en la primera visita. Estratégicamente el cliente más importante del pipeline.'},
-      // Archived/Completed
-      {id:98,nombre:'Hotel Sol de Oro',descripcion:'Oficina',ubicacion:'Lima',kam:'Josué Peña',dias:1,tecs_req:1,tecs_ids:[],fecha_ini:'2026-07-10',fecha_fin:'2026-07-10',status:'culminado',prioridad:0,notas:'Completado exitosamente.',archived:true,fecha_arch:'2026-07-10',
-        valor_est:4000,pipeline_est:4000,tipo_cli:'HOTEL',contrato:false,recurrente:false,nota_comercial:''},
-      {id:99,nombre:'RFS',descripcion:'Almacén',ubicacion:'Lima',kam:'Miguel Lozano',dias:1,tecs_req:2,tecs_ids:[],fecha_ini:'2026-07-13',fecha_fin:'2026-07-13',status:'culminado',prioridad:0,notas:'Completado exitosamente.',archived:true,fecha_arch:'2026-07-13',
-        valor_est:5500,pipeline_est:5500,tipo_cli:'EMPRESA',contrato:false,recurrente:false,nota_comercial:''},
+      // Sin datos de ejemplo: el sistema arranca en cero para llenarse desde el principio
     ];
   },
 
@@ -2995,14 +2995,18 @@ const APP = {
   getTec(id){ return this.state.tecnicos.find(t=>t.id===id); },
   getProj(id){ return this.state.projects.find(p=>p.id===id); },
 
-  // ── CONFLICT DETECTION ──
+  // ── CONFLICT DETECTION (por fecha Y hora: dos proyectos el mismo día NO chocan si sus horarios no se cruzan) ──
+  _hrsClash(a,b){
+    const aI=a.hora_ini||'08:00',aF=a.hora_fin||'18:00',bI=b.hora_ini||'08:00',bF=b.hora_fin||'18:00';
+    return aI<bF && bI<aF;
+  },
   getConflicts(){
     const active = this.activeProjects().filter(p=>p.fecha_ini&&p.fecha_fin);
     const conflicts=[];
     for(let i=0;i<active.length;i++){
       for(let j=i+1;j<active.length;j++){
         const a=active[i],b=active[j];
-        if(a.fecha_ini<=b.fecha_fin && b.fecha_ini<=a.fecha_fin){
+        if(a.fecha_ini<=b.fecha_fin && b.fecha_ini<=a.fecha_fin && this._hrsClash(a,b)){
           const common=a.tecs_ids.filter(id=>b.tecs_ids.includes(id));
           if(common.length>0){
             conflicts.push({p1:a.nombre,p2:b.nombre,p1id:a.id,p2id:b.id,tecs:common.map(id=>{const t=this.getTec(id);return t?t.nombre:id;}),d1:a.fecha_ini,d2:b.fecha_fin});
@@ -3016,7 +3020,7 @@ const APP = {
     const conflicts=this.getConflicts();
     const ids=new Set();
     this.activeProjects().filter(p=>p.fecha_ini&&p.fecha_fin).forEach(proj=>{
-      const others=this.activeProjects().filter(q=>q.id!==proj.id&&q.fecha_ini&&q.fecha_fin&&q.fecha_ini<=proj.fecha_fin&&proj.fecha_ini<=q.fecha_fin);
+      const others=this.activeProjects().filter(q=>q.id!==proj.id&&q.fecha_ini&&q.fecha_fin&&q.fecha_ini<=proj.fecha_fin&&proj.fecha_ini<=q.fecha_fin&&this._hrsClash(proj,q));
       others.forEach(q=>{proj.tecs_ids.filter(id=>q.tecs_ids.includes(id)).forEach(id=>ids.add(id));});
     });
     return ids;
@@ -3124,7 +3128,9 @@ function isoDate(y,m,d){return `${y}-${padded(m)}-${padded(d)}`;}
 function statusLabel(s){return {ejecucion:'En Ejecución',confirmado:'Confirmado',pendiente:'Pendiente',culminado:'Culminado'}[s]||s;}
 function statusClass(s){return {ejecucion:'s-ejecucion',confirmado:'s-confirmado',pendiente:'s-pendiente',culminado:'s-culminado'}[s]||'s-pendiente';}
 function priClass(n){return `pri-${Math.min(n,10)}`;}
-const PROJECT_COLORS=['#2196F3','#EF4444','#F59E0B','#10B981','#0D9488','#8B5CF6','#F97316','#EC4899','#14B8A6','#6366F1'];
+const PROJECT_COLORS=['#2196F3','#6366F1','#8B5CF6','#10B981','#0D9488','#0EA5E9','#14B8A6','#7C3AED','#2563EB','#059669'];
+// Rojo y naranja RESERVADOS para Soporte / Visita Free — nunca en proyectos normales
+function _sopColor(tipo){return tipo==='visita_free'?'#F97316':tipo==='mantenimiento'?'#16A34A':'#C40016';}
 function projColor(proj){const idx=APP.state.projects.filter(p=>!p.archived).findIndex(p=>p.id===proj.id);return PROJECT_COLORS[idx%PROJECT_COLORS.length];}
 function tecNames(ids){return ids.map(id=>{const t=APP.getTec(id);return t?(t.nombre+(typeof _tecRankBadge==='function'?_tecRankBadge(t.nombre):'')):'?';});}
 function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -3202,12 +3208,12 @@ function renderTecAvailability() {
   // ── Dashboard panel (fresh cards + mini timeline) ────────────────────
   if (panel) {
     const TODAY = _today();
-    const PROJ_COLORS = ['#6366F1','#EF4444','#F59E0B','#10B981','#0EA5E9','#8B5CF6','#EC4899','#F97316'];
+    const PROJ_COLORS = ['#6366F1','#2196F3','#8B5CF6','#10B981','#0EA5E9','#14B8A6','#7C3AED','#0D9488'];
     // Build project color map
     const activeProjs = APP.activeProjects ? APP.activeProjects() : APP.state.projects.filter(p=>!p.archived);
     const projColorMap = {};
     activeProjs.forEach((p,i)=>{ projColorMap[p.id] = PROJ_COLORS[i%PROJ_COLORS.length]; });
-    APP.activeProjects().forEach(function(p){if(p.tipo_sop)projColorMap[p.id]='#C40016';});
+    APP.activeProjects().forEach(function(p){if(p.tipo_sop)projColorMap[p.id]=_sopColor(p.tipo_sop);});
 
     const cards = tecs.map((t,i)=>{
       const stats = getTecStats(t.id, WINDOW);
@@ -3990,8 +3996,9 @@ function renderProjTimeline(){
         ? '<span style="font-size:9px;font-weight:800;background:#FEE2E2;color:#B91C1C;padding:1px 7px;border-radius:100px">SIN INFORME</span>'
         : '<span style="font-size:9px;font-weight:800;background:#F1F5F9;color:#64748B;padding:1px 7px;border-radius:100px">INF. —</span>');
     var stripe=p.informe==='entregado'?'':'background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px);';
-    var esSop=p.tipo_sop?'border-left:3px solid #C40016;background:#FDF2F3;':'';
-    return '<div style="display:grid;grid-template-columns:230px 1fr;gap:0;border-bottom:1px solid #EEF2F7;align-items:stretch'+(p.tipo_sop?';background:rgba(196,0,22,.035)':'')+'">'+
+    var _sc=p.tipo_sop?_sopColor(p.tipo_sop):null;
+    var esSop=_sc?('border-left:3px solid '+_sc+';background:'+_sc+'0d;'):'';
+    return '<div style="display:grid;grid-template-columns:230px 1fr;gap:0;border-bottom:1px solid #EEF2F7;align-items:stretch'+(_sc?';background:'+_sc+'09':'')+'">'+
       '<div style="padding:7px 10px;'+esSop+'min-width:0">'+
         '<div style="display:flex;align-items:center;gap:6px;min-width:0">'+
           '<span style="width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'+
@@ -4014,7 +4021,7 @@ function renderProjTimeline(){
   el.innerHTML='<div style="border:1px solid #0F172A;border-radius:14px;overflow:hidden;box-shadow:0 6px 22px rgba(10,22,40,.16);background:#fff">'+
     '<div style="background:linear-gradient(180deg,#243044,#1A2332);padding:9px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
       '<span style="font-size:13px;font-weight:800;color:#F8FAFC">Línea de tiempo de proyectos</span>'+
-      '<span style="font-size:10.5px;color:#94A3B8">Barra rayada = sin informe · Borde rojo = soporte · Sombreado rojo = domingo/feriado</span>'+
+      '<span style="font-size:10.5px;color:#94A3B8">Barra rayada = sin informe · Rojo = soporte · Naranja = visita free · Verde = mantenimiento</span>'+
       vistaBtns+
     '</div>'+
     '<div style="position:relative">'+
@@ -4077,7 +4084,7 @@ function renderAvailMatrix(){
   var projList=APP.activeProjects();
   var projColorMap={};
   projList.forEach(function(p,i){projColorMap[p.id]=PROJECT_COLORS[i%PROJECT_COLORS.length];});
-  APP.activeProjects().forEach(function(p){if(p.tipo_sop)projColorMap[p.id]='#C40016';});
+  APP.activeProjects().forEach(function(p){if(p.tipo_sop)projColorMap[p.id]=_sopColor(p.tipo_sop);});
 
   // Update palette
   var pal=document.getElementById('sched-palette');
@@ -4241,7 +4248,7 @@ function renderAvailMatrix(){
             '<div style="display:flex;gap:3px;margin-top:4px;flex-wrap:wrap;align-items:center">'+
               allTechProjs.slice(0,5).map(function(ap,pi){
                 var ci=APP.activeProjects().findIndex(function(x){return x.id===ap.id;});
-                var c=ap.tipo_sop?'#C40016':(PROJECT_COLORS[ci%PROJECT_COLORS.length]||'#94A3B8');
+                var c=ap.tipo_sop?_sopColor(ap.tipo_sop):(PROJECT_COLORS[ci%PROJECT_COLORS.length]||'#94A3B8');
                 return '<span style="width:8px;height:8px;border-radius:50%;background:'+c+';display:inline-block;flex-shrink:0" title="'+escH(ap.nombre)+'"></span>';
               }).join('')+
               (allTechProjs.length>5?'<span style="font-size:9px;color:#94A3B8">+'+( allTechProjs.length-5)+'</span>':'')+
@@ -4312,7 +4319,7 @@ function renderAvailMatrix(){
       rangeNotExplicit.forEach(function(p){
         if(_isTecDayExcl(p,t.id,day.iso)) return;
         var c=projColorMap[p.id]||'#64748B';
-        var hasConf2=rangeProjs.filter(function(q){return q.id!==p.id;}).length>0;
+        var hasConf2=rangeProjs.filter(function(q){return q.id!==p.id&&APP._hrsClash(p,q);}).length>0;
         var nm=p.nombre.length>10?p.nombre.slice(0,10)+'…':p.nombre;
         blocks+='<div class="sc3-block sc3-block-set" style="background:'+c+';color:#fff" '+
           'onclick="_openAsigModal('+t.id+',\''+day.iso+'\','+p.id+',null)" title="'+escH(p.nombre)+(hasConf2?' — CONFLICTO':'')+' — clic para editar horas o clonar">'+
@@ -4455,7 +4462,7 @@ function renderTimeline(){
   const allProj=[...APP.activeProjects(),...APP.archivedProjects()];
   const colorMap={};
   APP.activeProjects().forEach((p,i)=>{colorMap[p.id]=PROJECT_COLORS[i%PROJECT_COLORS.length];});
-  APP.activeProjects().forEach(function(p){if(p.tipo_sop)colorMap[p.id]='#C40016';});
+  APP.activeProjects().forEach(function(p){if(p.tipo_sop)colorMap[p.id]=_sopColor(p.tipo_sop);});
   APP.archivedProjects().forEach(p=>{colorMap[p.id]='#94A3B8';});
 
   // Build header
@@ -4627,6 +4634,30 @@ function renderArchive(){
   }).join('');
   document.getElementById('arch-tbody').innerHTML=rows||`<tr><td colspan="8" class="no-data">No hay proyectos culminados todavía.</td></tr>`;
 
+  // ── Informes de Preventa entregados (llegan aquí automáticamente al marcarse Entregado) ──
+  (function(){
+    var box=document.getElementById('arch-preventa'); if(!box) return;
+    var done=(APP.state.preventa||[]).filter(function(p){return p.status==='entregado';});
+    if(fIni||fFin){ done=done.filter(function(p){var ref=p.fecha_entrega||p.fecha_ini||''; if(!ref)return false; if(fIni&&ref<fIni)return false; if(fFin&&ref>fFin)return false; return true;}); }
+    if(_q) done=done.filter(function(p){return ((p.nombre||'')+' '+(p.responsable||'')+' '+(p.cliente||'')+' '+(p.notas||'')).toLowerCase().indexOf(_q)>=0;});
+    if(!done.length){ box.innerHTML=''; return; }
+    box.innerHTML='<div style="margin-top:18px;border-top:2px solid #E2E8F0;padding-top:14px">'+
+      '<div style="font-size:14px;font-weight:800;color:#0A1628;margin-bottom:10px">🔍 Informes de Preventa entregados <span style="font-size:12px;font-weight:700;color:#64748B;background:#F1F5F9;padding:2px 10px;border-radius:100px">'+done.length+'</span></div>'+
+      done.map(function(p){
+        return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #E6EBF3;border-radius:10px;padding:8px 12px;margin-bottom:6px">'+
+          '<span style="width:8px;height:8px;border-radius:50%;background:#10B981;flex-shrink:0"></span>'+
+          '<span style="font-size:13px;font-weight:800;color:#0F172A">'+escH(p.nombre)+'</span>'+
+          '<span style="font-size:11px;font-weight:800;background:#E9F9EF;color:#1B8A3E;padding:1px 8px;border-radius:100px">ENTREGADO</span>'+
+          '<span style="font-size:12px;color:#64748B">'+escH(p.responsable||'—')+(p.cliente?' · '+escH(p.cliente):'')+' · '+_fmtDateShort(p.fecha_ini)+' → '+_fmtDateShort(p.fecha_entrega)+'</span>'+
+          (p.notas?'<span style="font-size:12px;color:#94A3B8;flex:1;min-width:120px">'+escH(p.notas)+'</span>':'')+
+          '<span style="margin-left:auto;white-space:nowrap">'+
+            '<button class="tb-btn btn-outline btn-sm edit-only" onclick="pvtRestoreInforme('+p.id+')" title="Devolver a Preventa">↩</button>'+
+            '<button class="tb-btn btn-danger btn-sm edit-only" onclick="deletePreventaItem('+p.id+')" title="Eliminar definitivamente">🗑</button>'+
+          '</span>'+
+        '</div>';
+      }).join('')+'</div>';
+  })();
+
   try{_renderAuditLog(); _updateAuditCount();}catch(e){}
 }
 
@@ -4733,9 +4764,6 @@ function openProjectModal(id=null){
     </div>
     <div class="mf"><label class="mf-lbl">Fecha Fin</label>
       <input class="mf-inp" type="date" id="mf-fin" value="${v('fecha_fin')}">
-    </div>
-    <div class="mf"><label class="mf-lbl">Días de trabajo</label>
-      <input class="mf-inp" type="number" min="1" id="mf-dias" value="${vNum('dias',1)}">
     </div>
     <div class="mf"><label class="mf-lbl">Horario laboral — inicio</label>
       <input class="mf-inp" type="time" id="mf-hini" value="${v('hora_ini','08:00')||'08:00'}">
@@ -4845,19 +4873,20 @@ function _tecsLibresEnRango(fechaIni, fechaFin, exclProjId){
   });
 }
 
-function getTecScheduleConflicts(excludeId, tecIds, fechaIni, fechaFin) {
+function getTecScheduleConflicts(excludeId, tecIds, fechaIni, fechaFin, hIni, hFin) {
   if(!tecIds||!tecIds.length||!fechaIni||!fechaFin) return [];
+  const _self={hora_ini:hIni||'08:00',hora_fin:hFin||'18:00'};
   const conflicts=[];
   const others=APP.state.projects.filter(p=>!p.archived&&p.id!==excludeId&&p.tecs_ids&&p.tecs_ids.length>0&&p.fecha_ini&&p.fecha_fin);
   for(const other of others){
-    // Date overlap: A.start <= B.end AND B.start <= A.end
-    if(fechaIni<=other.fecha_fin && other.fecha_ini<=fechaFin){
+    // Choque real = mismas fechas Y horarios que se cruzan (horarios separados en el mismo día NO son conflicto)
+    if(fechaIni<=other.fecha_fin && other.fecha_ini<=fechaFin && APP._hrsClash(_self,other)){
       const shared=tecIds.filter(id=>other.tecs_ids.includes(id));
       if(shared.length>0){
         const tecNames=shared.map(id=>{const t=APP.getTec(id);return t?t.nombre:'ID'+id;}).join(', ');
         const dStart=other.fecha_ini.replace(/-/g,'/');
         const dEnd=other.fecha_fin.replace(/-/g,'/');
-        conflicts.push({proyecto:other.nombre,tecNames,rango:`${dStart} al ${dEnd}`});
+        conflicts.push({proyecto:other.nombre,tecNames,rango:`${dStart} al ${dEnd} · ${other.hora_ini||'08:00'}–${other.hora_fin||'18:00'}`});
       }
     }
   }
@@ -4882,7 +4911,7 @@ function showConflictAlert(conflicts, onConfirm) {
   }catch(e){}
   const body=`<div class="conf-box">
     <div class="conf-title">⚠ Conflicto de agenda detectado</div>
-    <div class="conf-subtitle">Regla de recursos: los siguientes técnicos ya están comprometidos en esas fechas. Puedes avanzar igual, cambiar fechas o elegir otro técnico.</div>
+    <div class="conf-subtitle">Regla de recursos: los siguientes técnicos ya están comprometidos en esas fechas con horarios que se cruzan. Si los horarios no chocan, no verás esta alerta. Puedes avanzar igual, cambiar fechas/horas o elegir otro técnico.</div>
     <div class="conf-list">${msg}</div>
     ${libresHtml}
     <div class="conf-actions">
@@ -4912,7 +4941,7 @@ function saveProjectFromModal(id){
     fecha_fin:_g('mf-fin'),
     hora_ini:_g('mf-hini')||'08:00',
     hora_fin:_g('mf-hfin')||'18:00',
-    dias:parseInt(_g('mf-dias'))||1,
+    dias:(function(){var i=_g('mf-ini'),f=_g('mf-fin');if(i&&f){var d=Math.round((new Date(f+'T00:00:00')-new Date(i+'T00:00:00'))/86400000)+1;return d>0?d:1;}return 1;})(),
     tecs_req:parseInt(_g('mf-treq'))||1,
     prioridad:parseInt(_g('mf-prio'))||(APP.activeProjects().length+1),
     notas:(_g('mf-notas')||'').trim(),
@@ -4927,7 +4956,7 @@ function saveProjectFromModal(id){
   window._sopNewTipo='';
 
   // ── Check technician schedule conflicts before saving ──
-  const _conflicts = getTecScheduleConflicts(id||null, data.tecs_ids, data.fecha_ini, data.fecha_fin);
+  const _conflicts = getTecScheduleConflicts(id||null, data.tecs_ids, data.fecha_ini, data.fecha_fin, data.hora_ini, data.hora_fin);
   if(_conflicts.length > 0){
     showConflictAlert(_conflicts, function(){
       _doSaveProject(id, data);
@@ -5231,10 +5260,11 @@ function gsRender(){
   // Soportes / Visitas
   grp('Soportes y Visitas', APP.activeProjects().filter(function(p){return !!p.tipo_sop;}).filter(function(p){
     var tecs=(p.tecs_ids||[]).map(tecName).join(' ');
-    return hit([p.nombre,p.descripcion,p.ubicacion,p.kam,statusLabel(p.status),p.tipo_sop==='visita_free'?'visita free':'soporte',tecs,p.fecha_ini,p.fecha_fin].join(' '),p.fecha_ini,p.fecha_fin);
+    return hit([p.nombre,p.descripcion,p.ubicacion,p.kam,statusLabel(p.status),p.tipo_sop==='visita_free'?'visita free':p.tipo_sop==='mantenimiento'?'mantenimiento':'soporte',tecs,p.fecha_ini,p.fecha_fin].join(' '),p.fecha_ini,p.fecha_fin);
   }).map(function(p){
-    var vf=p.tipo_sop==='visita_free';
-    return {ico:'🛠',ib:vf?'#FDE8EA':'#C40016',ic:vf?'#C0392B':'#fff',t:p.nombre,s:(p.kam?'KAM '+p.kam+' · ':'')+_gsFmtF(p.fecha_ini,p.fecha_fin),tag:vf?'VISITA FREE':'SOPORTE',tb:vf?'#FDE8EA':'#C40016',tc:vf?'#C0392B':'#fff',go:function(){_gsGo('t-sop');}};
+    var _c=_sopColor(p.tipo_sop);
+    var _tag=p.tipo_sop==='visita_free'?'VISITA FREE':p.tipo_sop==='mantenimiento'?'MANTENIMIENTO':'SOPORTE';
+    return {ico:'🛠',ib:_c,ic:'#fff',t:p.nombre,s:(p.kam?'KAM '+p.kam+' · ':'')+_gsFmtF(p.fecha_ini,p.fecha_fin),tag:_tag,tb:_c,tc:'#fff',go:function(){_gsGo('t-sop');}};
   }));
   // Preventa
   grp('Preventa', (APP.state.preventa||[]).filter(function(p){
@@ -5303,11 +5333,13 @@ function openSopModal(tipo){
   window._sopNewTipo=tipo||'soporte';
   openProjectModal(null);
   var mt=document.querySelector('.modal-title,#modal-title');
-  if(mt) mt.textContent=(tipo==='visita_free'?'➕ Nueva Visita Free':'➕ Nuevo Soporte');
+  if(mt) mt.textContent=(tipo==='visita_free'?'➕ Nueva Visita Free':tipo==='mantenimiento'?'➕ Nuevo Mantenimiento':'➕ Nuevo Soporte');
 }
 function _sopTipoBadge(tipo){
   return tipo==='visita_free'
-    ? '<span class="sop-badge" style="background:#FDE8EA;color:#C0392B">VISITA FREE</span>'
+    ? '<span class="sop-badge" style="background:#F97316;color:#fff">VISITA FREE</span>'
+    : tipo==='mantenimiento'
+    ? '<span class="sop-badge" style="background:#16A34A;color:#fff">MANTENIMIENTO</span>'
     : '<span class="sop-badge" style="background:#C40016;color:#fff">SOPORTE</span>';
 }
 function renderSoportes(){
@@ -5317,7 +5349,7 @@ function renderSoportes(){
   if(q) items=items.filter(function(p){return (p.nombre+' '+(p.descripcion||'')+' '+(p.ubicacion||'')+' '+(p.kam||'')).toLowerCase().indexOf(q)>=0;});
   items.sort(function(a,b){return (b.fecha_ini||'').localeCompare(a.fecha_ini||'');});
   if(!items.length){
-    el.innerHTML='<div class="sop-empty">Sin soportes ni visitas registradas.<br><span style="font-size:12px;color:#94A3B8">Usa ➕ Soporte o ➕ Visita Free — se reflejan automáticamente en el calendario de técnicos.</span></div>';
+    el.innerHTML='<div class="sop-empty">Sin soportes, visitas ni mantenimientos registrados.<br><span style="font-size:12px;color:#94A3B8">Usa ➕ Soporte, ➕ Visita Free o ➕ Mantenimiento — se reflejan automáticamente en el calendario de técnicos.</span></div>';
     return;
   }
   var stChip={pendiente:['#FFF4E0','#B45309','Pendiente'],confirmado:['#EBF4FF','#0A5FCC','Confirmado'],ejecucion:['#E9F9EF','#1B8A3E','En Ejecución']};
@@ -5868,22 +5900,17 @@ function prfRender(){
         '<b style="font-size:10.5px;color:'+hc+';width:22px;text-align:right">'+v+'</b></div>';
     }).join('');
     teamCard='<div class="prf2-card prf2-card-team" style="cursor:default" onclick="void(0)">'+
-      '<div class="prf2-team-sheen" style="background:linear-gradient(120deg,#1B2735 0%,#3A4A61 22%,#8FA3BC 38%,#E8EFF7 50%,#8FA3BC 62%,#3A4A61 78%,#1B2735 100%);padding:10px 14px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden">'+
-        '<div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,'+tSel.b+','+tSel.b+'99);box-shadow:0 0 0 1.5px rgba(255,255,255,.5),0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff">Σ</div>'+
+      '<div class="prf2-team-sheen" style="background:linear-gradient(120deg,#10141B 0%,#2B3B52 15%,#7E93AE 32%,#F2F7FD 48%,#C8D6E8 55%,#7E93AE 68%,#2B3B52 85%,#10141B 100%);padding:13px 16px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;border-bottom:2px solid rgba(255,255,255,.35)">'+
+        '<div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,'+tSel.b+','+tSel.b+'88);box-shadow:0 0 0 2px rgba(255,255,255,.65),inset 0 1px 2px rgba(255,255,255,.5),0 3px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff">Σ</div>'+
         '<div style="flex:1;min-width:0">'+
-          '<div style="font-size:13.5px;font-weight:900;color:#0F172A;text-shadow:0 1px 0 rgba(255,255,255,.55)">EQUIPO '+escH(tSel.name)+' — Media combinada</div>'+
-          '<div style="font-size:10.5px;font-weight:700;color:#26354A;text-shadow:0 1px 0 rgba(255,255,255,.4)">'+persons.length+' integrante(s) · promedio por habilidad</div>'+
+          '<div style="font-size:19px;font-weight:900;letter-spacing:.04em;background:linear-gradient(180deg,#FFFFFF 20%,#B9C9DD 50%,#5D7492 52%,#EAF1F9 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45))">'+escH(tSel.name)+'</div>'+
         '</div>'+
-        '<div style="text-align:center;background:linear-gradient(180deg,#0F1B2C,#1B2A40);border-radius:10px;padding:5px 13px;box-shadow:0 0 0 1.5px rgba(255,255,255,.55),0 3px 8px rgba(0,0,0,.35)">'+
-          '<div style="font-size:22px;font-weight:900;color:#fff;line-height:1">'+poderMedio+'</div>'+
+        '<div style="text-align:center;background:linear-gradient(180deg,#0F1B2C,#1B2A40);border-radius:10px;padding:6px 15px;box-shadow:0 0 0 1.5px rgba(255,255,255,.7),inset 0 1px 0 rgba(255,255,255,.15),0 3px 10px rgba(0,0,0,.45)">'+
+          '<div style="font-size:24px;font-weight:900;color:#fff;line-height:1">'+poderMedio+'</div>'+
           '<div style="font-size:8px;font-weight:800;color:#9FB4CE;letter-spacing:.08em">PODER MEDIO</div>'+
         '</div>'+
       '</div>'+
       '<div style="padding:14px 4px 2px;display:flex;justify-content:center;background:linear-gradient(180deg,#FAFBFF,#fff)">'+radarT+'</div>'+
-      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 12px 8px;flex-wrap:wrap">'+
-        '<span style="font-size:10.5px;font-weight:800;background:#F1F5F9;color:#475569;padding:2px 9px;border-radius:100px" title="Poder del integrante más débil y más fuerte">Rango '+pMin+'–'+pMax+'</span>'+
-        '<span style="font-size:10.5px;font-weight:800;background:'+eqCol+'18;color:'+eqCol+';padding:2px 9px;border-radius:100px" title="100 = equipo parejo. Baja cuando hay mucha brecha entre el más fuerte y el más débil — úsalo para equiparar equipos">Equilibrio '+equilibrio+'%</span>'+
-      '</div>'+
       '<div style="padding:8px 14px 12px">'+barsT+'</div>'+
     '</div>';
   }
@@ -6612,7 +6639,7 @@ function _renderCargaView(){
 
   var projColorMap={};
   APP.activeProjects().forEach(function(p,i){projColorMap[p.id]=PROJECT_COLORS[i%PROJECT_COLORS.length];});
-  APP.activeProjects().forEach(function(p){if(p.tipo_sop)projColorMap[p.id]='#C40016';});
+  APP.activeProjects().forEach(function(p){if(p.tipo_sop)projColorMap[p.id]=_sopColor(p.tipo_sop);});
 
   var rows=APP.state.tecnicos.map(function(t){
     var prf=typeof prfPersons!=='undefined'?prfPersons.find(function(p){return p.tec_id===t.id||p.nombre.toLowerCase()===t.nombre.toLowerCase();}):null;
@@ -7173,12 +7200,14 @@ function _renderAuditLog(){
 
   // Filters
   var searchUser = (document.getElementById('audit-search-user')||{}).value||'';
+  var searchProj = ((document.getElementById('audit-search-proj')||{}).value||'').toLowerCase();
   var fromDate   = (document.getElementById('arch-f-ini')||{}).value||'';
   var toDate     = (document.getElementById('arch-f-fin')||{}).value||'';
 
   var filtered = log.filter(function(e){
     if(searchUser && !((e.nombre_usuario||'').toLowerCase().includes(searchUser.toLowerCase()) ||
                        (e.usuario||'').toLowerCase().includes(searchUser.toLowerCase()))) return false;
+    if(searchProj && (e.proj_nombre||'').toLowerCase().indexOf(searchProj)<0) return false;
     if(fromDate && e.fecha < fromDate) return false;
     if(toDate   && e.fecha > toDate)   return false;
     return true;
@@ -7271,6 +7300,23 @@ function _updateAuditCount(){
   if(!el) return;
   var log = _getAuditLog();
   el.textContent = log.length + ' registro' + (log.length!==1?'s':'');
+}
+
+// ── Exportar historial completo a CSV para análisis ──
+function _exportAuditCSV(){
+  var log=_getAuditLog();
+  if(!log.length){ toast('No hay registros para exportar','warn'); return; }
+  var esc=function(v){v=String(v==null?'':v);return '"'+v.replace(/"/g,'""')+'"';};
+  var head=['Fecha','Hora','Usuario','Nombre','Nivel','Proyecto','Accion','Campo','Valor anterior','Valor nuevo','Detalle'];
+  var lines=[head.join(';')].concat(log.map(function(e){
+    return [e.fecha,e.hora,e.usuario,e.nombre_usuario,e.nivel?'N'+e.nivel:'',e.proj_nombre,e.accion,e.campo||'',e.valor_ant||'',e.valor_nuevo||'',e.detalle||''].map(esc).join(';');
+  }));
+  var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='gct-ops-historial-'+_today()+'.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('✓ Historial exportado ('+log.length+' registros)','ok');
 }
 
 APP.init();
@@ -7493,7 +7539,6 @@ try { _DOC.get()
     if(cloud&&local&&local._appv==='v5'&&local._ts&&(!cloud._ts||local._ts>cloud._ts)&&_rich(local)>=_rich(cloud)){
       // Lo local es más reciente (un guardado a la nube falló): recuperar y re-subir
       _applyData(local);
-      _skipSnap=true;
       _DOC.set(local).then(function(){toast('✓ Cambios locales recuperados y subidos a la nube','ok');}).catch(function(e){console.error(e);});
     } else if(cloud){
       _applyData(cloud);
@@ -7501,12 +7546,13 @@ try { _DOC.get()
       _DOC.set(JSON.parse(APP.exportJSON())).catch(e=>console.error(e));
     }
     _setCloud('online');
+    _cloudReady=true; // desde aquí ya es seguro guardar
     try{_seedSkillsV1();}catch(e){}
     try{_cleanDemoV1();}catch(e){console.error('clean:',e);}
     renderAll();
     // Real-time sync — all browsers update automatically
     _DOC.onSnapshot(snap=>{
-      if(_skipSnap){_skipSnap=false;return;}
+      // hasPendingWrites=true → eco de un guardado propio (se ignora); false → dato confirmado del servidor (propio o de OTRO usuario) → aplicar SIEMPRE
       if(snap.exists&&!snap.metadata.hasPendingWrites){
         _applyData(snap.data());
         renderAll();
@@ -7518,14 +7564,16 @@ try { _DOC.get()
     console.error('Firebase load error:',e);
     try{const ls=localStorage.getItem('gct-ops-v2');if(ls)_applyData(JSON.parse(ls));}catch(le){}
     _setCloud('offline');
+    _cloudReady=true; // modo offline: se permite guardar en local
     renderAll();
   });
 } catch(fbErr) {
   // Firebase SDK not loaded (preview mode or offline)
   console.warn('Firebase not available, using local data');
   _setCloud('offline');
+  _cloudReady=true;
   renderAll();
-}let _saveDebounce=null,_skipSnap=false;
+}let _saveDebounce=null,_skipSnap=false,_cloudReady=false;
 function _buildSaveData(){
   const data=JSON.parse(APP.exportJSON());
   try{ if(typeof prfPersons!=='undefined'&&prfPersons.length) data.perfiles={persons:prfPersons,dims:(prfDims||[]).filter(x=>x.custom),teams:Object.values(prfTeams||{}).filter(x=>x.custom)}; }catch(e){}
@@ -7536,22 +7584,25 @@ function _buildSaveData(){
 function _flushSave(){
   if(!_saveDebounce) return;
   clearTimeout(_saveDebounce); _saveDebounce=null;
+  if(!_cloudReady){ return; } // BLOQUEO: jamás subir a la nube antes de que termine la carga inicial
   const data=_buildSaveData();
   try{localStorage.setItem(_LS_KEY,JSON.stringify(data));}catch(e){}
-  _skipSnap=true;
   _DOC.set(data)
     .then(()=>{_showAutosavePill('saved');_setCloud('online');})
     .catch(e=>{console.error('Save error:',e);_showAutosavePill('error');_setCloud('offline');toast('⚠ Sin conexión: el cambio quedó en este dispositivo y se subirá al reconectar','warn');});
 }
 function saveLS(){
   const dataNow=_buildSaveData();
+  // BLOQUEO: antes de terminar la carga inicial de la nube no se guarda NADA
+  // (evita subir el estado vacío de arranque y borrar los datos reales)
+  if(!_cloudReady){ return; }
   try{localStorage.setItem(_LS_KEY,JSON.stringify(dataNow));}catch(e){}
   _showAutosavePill('saving');
   clearTimeout(_saveDebounce);
   _saveDebounce=setTimeout(()=>{
     _saveDebounce=null;
+    if(!_cloudReady) return;
     const data=_buildSaveData();
-    _skipSnap=true;
     _DOC.set(data)
       .then(()=>{_showAutosavePill('saved');_setCloud('online');})
       .catch(e=>{console.error('Save error:',e);_showAutosavePill('error');_setCloud('offline');toast('⚠ Sin conexión: el cambio quedó en este dispositivo y se subirá al reconectar','warn');});
@@ -7663,7 +7714,6 @@ const PRF_BASE_PERSONS=[
   {id:7, eq:4,rol:"JF",nombre:"Daniel",     ape:"Durán",             edad:36,  brev:true, nivel:"BDA 3/3",    alt:1,s:{tec:8,rf:7,seg:8,ent:7,doc:7,lid:7},adv:["Maestro instalación","Experto RF","Ref. seguridad","Firma PETS"],env:["Residencial","Retail/mall","Corporativo","Banca"],v:false},
   {id:8, eq:4,rol:"MD",nombre:"Roberto",  ape:"Mariche Yzaguirre", edad:54,  brev:true, nivel:"BDA 2/3",    alt:1,s:{tec:7,rf:6,seg:8,ent:8,doc:6,lid:6},adv:["Ref. seguridad"],env:["Residencial","Retail/mall","Corporativo","Banca"],v:false},
   {id:9, eq:5,rol:"JF",nombre:"Yeltsin",     ape:"Mori",              edad:null,brev:true, nivel:"BDA 3/3",    alt:1,s:{tec:8,rf:7,seg:8,ent:7,doc:7,lid:7},adv:["Élite BDA","Maestro instalación","Experto RF","Ref. seguridad","Firma PETS"],env:["Residencial","Retail/mall","Corporativo","Banca"],v:false},
-  {id:10,eq:5,rol:"JR",nombre:"Jhonatan",  ape:"Flores",            edad:null,brev:false,nivel:"BDA 1/3",    alt:1,s:{tec:4,rf:3,seg:6,ent:3,doc:3,lid:2},adv:[],env:["Residencial","Retail/mall"],v:false},
   {id:11,eq:6,rol:"JF",nombre:"Wilman",     ape:"Cueva Días",        edad:36,  brev:true, nivel:"BDA 3/3 MAX",alt:2,s:{tec:9,rf:9,seg:9,ent:8,doc:8,lid:9},adv:["Maestro instalación","Experto RF","Ref. seguridad","Apto minería","Firma PETS","Altura avanzada"],env:["Residencial","Retail/mall","Corporativo","Banca","Minería"],v:false},
   {id:12,eq:6,rol:"JR",nombre:"David",            ape:"",                  edad:null,brev:false,nivel:"BDA 1/3",    alt:1,s:{tec:5,rf:4,seg:6,ent:4,doc:4,lid:3},adv:[],env:["Residencial","Retail/mall"],v:false},
 ];
@@ -7694,7 +7744,6 @@ function prfSave(){
   if(typeof _DOC!=='undefined'){
     const fbData=JSON.parse(APP.exportJSON());
     fbData.perfiles=data;
-    _skipSnap=true;
     _DOC.set(fbData).then(function(){
       toast('✓ Perfiles guardados en la nube','ok');
     }).catch(function(e){
@@ -8226,11 +8275,7 @@ const PVT_STATUS = {
 
 // Default data — informes de preventa de ejemplo
 const PVT_DEFAULT = [
-  {id:1, nombre:'Relevamiento BBVA Lima Norte',       cliente:'BBVA',              responsable:'Cristhian Benavides',fecha_ini:'2026-07-10',fecha_entrega:'2026-07-18',status:'elaboracion',notas:'Informe técnico 3 pisos, requiere medición in-situ'},
-  {id:2, nombre:'Relevamiento EsSalud Rebagliati',    cliente:'EsSalud',           responsable:'Humberto Vega',     fecha_ini:'2026-07-14',fecha_entrega:'2026-07-22',status:'elaboracion',notas:'Hospital 8 pisos, coordinación con seguridad interna'},
-  {id:3, nombre:'Relevamiento Cencosud Wong Miraflores',cliente:'Cencosud/Wong',  responsable:'Patricia Grandez',  fecha_ini:'2026-07-20',fecha_entrega:'2026-07-28',status:'por_venir',  notas:'Mall 2 niveles, incluye estacionamiento'},
-  {id:4, nombre:'Relevamiento Marina de Guerra Callao',cliente:'Marina de Guerra', responsable:'Josue Peña',        fecha_ini:'2026-07-22',fecha_entrega:'2026-08-01',status:'por_venir',  notas:'Base naval, requiere autorización previa'},
-  {id:5, nombre:'Relevamiento Compartamos Cusco',     cliente:'Compartamos Banco', responsable:'Cristhian Benavides',fecha_ini:'2026-07-05',fecha_entrega:'2026-07-12',status:'entregado', notas:'Entregado a tiempo. Propuesta comercial lista.'},
+  // Sin informes de ejemplo: Preventa arranca en cero
 ];
 
 // Extend APP.state with preventa if not exists
@@ -8339,77 +8384,123 @@ function pvtRenderResources(){
   </div>`;
 }
 
-// ── Render Gantt ─────────────────────────────────────────────────────
+// ── Render Gantt: línea de tiempo estilo Proyectos ──────────────────
+function _pvtTlSetView(v){ try{localStorage.setItem('gct_pvt_tl_view',v);}catch(e){} pvtRenderGantt(); }
 function pvtRenderGantt(){
-  const container = document.getElementById('preventa-gantt');
+  const container=document.getElementById('preventa-gantt');
   if(!container) return;
-  const items = APP.state.preventa.slice().sort((a,b)=>{
-    const ord={elaboracion:0,por_venir:1,entregado:2};
-    return (ord[a.status]||0)-(ord[b.status]||0)||a.fecha_ini<b.fecha_ini?-1:1;
-  });
-  if(!items.length){container.innerHTML='';return;}
-  // Ventana: cubre TODOS los informes (inicio→entrega) + hoy, así el ejemplo siempre se ve
-  const today = _today();
-  var _dmin=items.reduce(function(m,p){return p.fecha_ini&&p.fecha_ini<m?p.fecha_ini:m;},today);
-  var _dmax=items.reduce(function(m,p){return p.fecha_entrega&&p.fecha_entrega>m?p.fecha_entrega:m;},today);
-  var _start=new Date(_dmin+'T00:00:00'); _start.setDate(_start.getDate()-2);
-  var _end=new Date(_dmax+'T00:00:00'); _end.setDate(_end.getDate()+2);
-  // límite de 90 días para no desbordar
-  if((_end-_start)/86400000>90){ _start=new Date(_end.getTime()-90*86400000); }
-  const days = [];
-  for(let d=new Date(_start); d<=_end; d.setDate(d.getDate()+1)){
-    const iso = d.toISOString().slice(0,10);
-    const dow = d.getDay();
-    days.push({iso, day:d.getDate(), mon:d.toLocaleString('es',{month:'short'}), isToday:iso===today, isWeekend:dow===0||dow===6});
+  const D=86400000, today=_today(), hoy=new Date(today+'T00:00:00');
+  let view='week'; try{view=localStorage.getItem('gct_pvt_tl_view')||'week';}catch(e){}
+  const vistaBtns='<span style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap">'+
+    [['week','Semana'],['month','Mes'],['quarter','Trimestre'],['all','Todo']].map(function(x){
+      return '<button onclick="_pvtTlSetView(\''+x[0]+'\')" style="font-size:11px;font-weight:800;padding:3px 11px;border-radius:100px;border:none;cursor:pointer;background:'+(view===x[0]?'#0A7AFF':'rgba(255,255,255,.14)')+';color:#fff">'+x[1]+'</button>';
+    }).join('')+'</span>';
+  const header='<div style="background:linear-gradient(180deg,#243044,#1A2332);padding:9px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+    '<span style="font-size:13px;font-weight:800;color:#F8FAFC">Línea de tiempo de informes — Preventa</span>'+
+    '<span style="font-size:10.5px;color:#94A3B8">Azul = en elaboración · Rojo = por venir · Sombreado rojo = domingo/feriado</span>'+vistaBtns+'</div>';
+  const wrapOpen='<div style="border:1px solid #0F172A;border-radius:14px;overflow:hidden;box-shadow:0 6px 22px rgba(10,22,40,.16);background:#fff">';
+  const all=APP.state.preventa.slice().filter(function(p){return p.status!=='entregado'&&p.fecha_ini&&p.fecha_entrega&&p.fecha_entrega>=today;})
+    .sort(function(a,b){return a.fecha_ini<b.fecha_ini?-1:1;});
+  if(!all.length){
+    container.innerHTML=wrapOpen+header+'<div style="padding:26px;text-align:center;font-size:13px;color:#94A3B8">Sin informes con entrega pendiente — los vencidos siguen en la lista de abajo (amplía el filtro de fechas) y los entregados están en Archivo.</div></div>';
+    return;
   }
-  const totalDays = days.length;
-  function pct(date){
-    const idx = days.findIndex(d=>d.iso===date);
-    return idx<0?null:(idx/totalDays*100).toFixed(2);
+  // Ventana según vista
+  var min,max;
+  if(view==='week'){ min=new Date(hoy); min.setDate(min.getDate()-((hoy.getDay()+6)%7)); max=new Date(min.getTime()+6*D); }
+  else if(view==='month'){ min=new Date(hoy.getFullYear(),hoy.getMonth(),1); max=new Date(hoy.getFullYear(),hoy.getMonth()+1,0); }
+  else if(view==='quarter'){ var qm=Math.floor(hoy.getMonth()/3)*3; min=new Date(hoy.getFullYear(),qm,1); max=new Date(hoy.getFullYear(),qm+3,0); }
+  else {
+    // "Todo": arranca en HOY (a la izquierda) y cubre hasta la última entrega futura
+    min=new Date(hoy.getTime()-2*D);
+    max=new Date(Math.max.apply(null,all.map(function(p){return new Date(p.fecha_entrega+'T00:00:00').getTime();})));
+    if(max<hoy)max=new Date(hoy);
+    max=new Date(max.getTime()+2*D);
+    if((max-min)/D<14){ max=new Date(min.getTime()+14*D); }
   }
-  // Day headers
-  const dayHeaders = days.map(d=>`<th class="pvt-gantt-col-day${d.isToday?' is-today':''}${d.isWeekend?' is-weekend':''}">${d.day}<br><span style="font-size:14px">${d.mon}</span></th>`).join('');
-  // Rows
-  const rows = items.map(p=>{
-    const st = PVT_STATUS[p.status]||PVT_STATUS.por_venir;
-    const cells = days.map(d=>{
-      const inRange = p.fecha_ini<=d.iso && d.iso<=p.fecha_entrega;
-      const isStart = d.iso===p.fecha_ini;
-      const isEnd = d.iso===p.fecha_entrega;
-      let content = '';
-      if(inRange){
-        const radius = `border-radius:${isStart?'6px':0} ${isEnd?'6px':0} ${isEnd?'6px':0} ${isStart?'6px':0}`;
-        const label = isStart ? escH(p.nombre.length>20?p.nombre.slice(0,18)+'…':p.nombre) : '';
-        content = `<div class="pvt-timeline-bar pvt-bar-${p.status}" style="height:22px;${radius}">${label}</div>`;
-      }
-      return `<td class="pvt-gantt-cell${d.isToday?' is-today-col':''}${d.isWeekend?' is-weekend-col':''}">${content}</td>`;
-    }).join('');
-    const metaLine = `${escH(p.responsable||'—')} · Entrega: ${_fmtDateShort(p.fecha_entrega)}`;
-    return `<tr>
-      <td class="pvt-gantt-col-label" title="${escH(p.nombre)}">
-        <span style="display:flex;align-items:center;gap:6px">
-          <span style="width:8px;height:8px;border-radius:50%;background:${st.color};flex-shrink:0"></span>
-          ${escH(p.nombre.length>22?p.nombre.slice(0,20)+'…':p.nombre)}
-        </span>
-        <small>${metaLine}</small>
-      </td>
-      ${cells}
-    </tr>`;
+  var span=Math.max(1,Math.round((max-min)/D));
+  var pct=function(d){return ((new Date(d+'T00:00:00')-min)/D)/span*100;};
+  var hoyPct=(((hoy-min)/D)+0.5)/span*100;
+  // Meses
+  var MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'];
+  var months=''; var cur=new Date(min.getFullYear(),min.getMonth(),1);
+  while(cur<=max){
+    var l0=Math.max(0,((cur-min)/D)/span*100);
+    months+='<div style="position:absolute;left:'+l0+'%;top:0;bottom:0;border-left:1px solid #CBD5E1"></div>'+
+      '<span style="position:absolute;left:'+l0+'%;top:2px;font-size:9px;font-weight:800;color:#94A3B8;padding-left:4px;text-transform:uppercase;letter-spacing:.05em">'+MN[cur.getMonth()]+'</span>';
+    cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+  }
+  // Días + feriados Perú + domingos/sábados
+  var dayGrid='', dayNums='';
+  var showNums=span<=45, showTicks=span<=120;
+  for(var di=0;di<=span;di++){
+    var dd=new Date(min.getTime()+di*D);
+    var iso=dd.toISOString().slice(0,10);
+    var dl=di/span*100, dw=100/span;
+    var fer=(typeof FERIADOS_PE!=='undefined')?FERIADOS_PE[iso]:null;
+    if(fer){ dayGrid+='<div title="'+escH(fer)+'" style="position:absolute;left:'+dl+'%;width:'+dw+'%;top:0;bottom:0;background:repeating-linear-gradient(-45deg,rgba(220,38,38,.10) 0 5px,rgba(220,38,38,.03) 5px 10px)"></div>'; }
+    else if(dd.getDay()===0){ dayGrid+='<div style="position:absolute;left:'+dl+'%;width:'+dw+'%;top:0;bottom:0;background:rgba(220,38,38,.05)"></div>'; }
+    else if(dd.getDay()===6){ dayGrid+='<div style="position:absolute;left:'+dl+'%;width:'+dw+'%;top:0;bottom:0;background:rgba(15,23,42,.025)"></div>'; }
+    if(showTicks) dayGrid+='<div style="position:absolute;left:'+dl+'%;top:0;bottom:0;border-left:1px solid rgba(15,23,42,.05)"></div>';
+    if(showNums) dayNums+='<span style="position:absolute;left:'+(dl+dw/2)+'%;transform:translateX(-50%);bottom:1px;font-size:8px;font-weight:700;color:'+(fer||dd.getDay()===0?'#DC2626':'#B6C0CE')+'">'+dd.getDate()+'</span>';
+  }
+  // Filas (solo informes que tocan la ventana)
+  var items=all.filter(function(p){return pct(p.fecha_entrega)>=0&&pct(p.fecha_ini)<=100;});
+  if(!items.length){
+    container.innerHTML=wrapOpen+header+'<div style="padding:26px;text-align:center;font-size:13px;color:#94A3B8">Sin informes en este período — usa los botones de vista para ampliar.</div></div>';
+    return;
+  }
+  var rows=items.map(function(p){
+    var st=PVT_STATUS[p.status]||PVT_STATUS.por_venir;
+    var c=st.color;
+    var l=Math.max(0,pct(p.fecha_ini)), r=Math.min(100,pct(p.fecha_entrega)+(1/span*100));
+    var w=Math.max(1.5,r-l);
+    var dif=Math.round((new Date(p.fecha_entrega+'T00:00:00')-hoy)/D);
+    var estTxt,estCol;
+    if(dif<0){estTxt='Vencido '+Math.abs(dif)+'d';estCol='#DC2626';}
+    else if(dif===0){estTxt='Entrega HOY';estCol='#C40016';}
+    else{estTxt='Quedan '+dif+'d';estCol=dif<=3?'#C2410C':'#15803D';}
+    var eta=(l+w)<=78
+      ? '<span style="position:absolute;left:calc('+(l+w)+'% + 6px);top:12px;font-size:10px;font-weight:900;color:'+estCol+';white-space:nowrap;background:rgba(255,255,255,.88);padding:1px 6px;border-radius:100px;z-index:3">'+estTxt+'</span>'
+      : (l>=20
+        ? '<span style="position:absolute;right:calc('+(100-l)+'% + 6px);top:12px;font-size:10px;font-weight:900;color:'+estCol+';white-space:nowrap;background:rgba(255,255,255,.88);padding:1px 6px;border-radius:100px;z-index:3">'+estTxt+'</span>'
+        : '<span style="position:absolute;right:6px;top:12px;font-size:10px;font-weight:900;color:#fff;white-space:nowrap;background:rgba(15,23,42,.55);padding:1px 7px;border-radius:100px;z-index:3;pointer-events:none">'+estTxt+'</span>');
+    return '<div style="display:grid;grid-template-columns:230px 1fr;gap:0;border-bottom:1px solid #EEF2F7;align-items:stretch">'+
+      '<div style="padding:7px 10px;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:6px;min-width:0">'+
+          '<span style="width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'+
+          '<span style="font-size:12px;font-weight:800;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escH(p.nombre)+'">'+escH(p.nombre)+'</span>'+
+          '<span style="font-size:9px;font-weight:800;background:'+(st.badgeBg||'#F1F5F9')+';color:'+(st.badgeFg||'#64748B')+';padding:1px 7px;border-radius:100px;white-space:nowrap">'+escH(st.label)+'</span>'+
+        '</div>'+
+        '<div style="font-size:10.5px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escH(p.responsable||'—')+(p.cliente?' · '+escH(p.cliente):'')+'</div>'+
+      '</div>'+
+      '<div style="position:relative;min-height:40px;overflow:hidden">'+
+        '<div onclick="openPreventaModal('+p.id+')" title="'+escH(p.nombre)+' · '+p.fecha_ini+' → '+p.fecha_entrega+' · '+estTxt+'" '+
+          'style="position:absolute;left:'+l+'%;width:'+w+'%;top:8px;height:24px;background:'+c+';border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0 8px;overflow:hidden;box-shadow:0 1px 4px '+c+'55">'+
+          '<span style="font-size:10px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escH(p.nombre)+'</span>'+
+        '</div>'+eta+
+      '</div>'+
+    '</div>';
   }).join('');
-  container.innerHTML = `<div class="pvt-gantt-wrap">
-    <div class="pvt-gantt-header">
-      <span class="pvt-gantt-title">📅 Gantt de Informes de Preventa</span>
-      <div class="pvt-legend">
-        ${Object.entries(PVT_STATUS).map(([k,v])=>`<span><span class="pvt-legend-dot" style="background:${v.color}"></span>${v.label}</span>`).join('')}
-      </div>
-    </div>
-    <div class="pvt-gantt-grid">
-      <table class="pvt-gantt-table">
-        <thead><tr><th class="pvt-gantt-col-label" style="font-size:14px;font-weight:700;color:#94A3B8;padding:8px 12px">INFORME</th>${dayHeaders}</tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  </div>`;
+  container.innerHTML=wrapOpen+header+
+    '<div style="position:relative">'+
+      '<div style="display:grid;grid-template-columns:230px 1fr">'+
+        '<div style="border-right:1px solid #E6EBF3"></div>'+
+        '<div style="position:relative;height:26px;overflow:hidden">'+months+dayNums+'</div>'+
+      '</div>'+
+      '<div style="position:relative">'+
+        '<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:grid;grid-template-columns:230px 1fr;pointer-events:none;z-index:1">'+
+          '<div></div><div style="position:relative">'+dayGrid+'</div>'+
+        '</div>'+
+        '<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:grid;grid-template-columns:230px 1fr;pointer-events:none;z-index:2">'+
+          '<div></div><div style="position:relative">'+
+            (hoyPct>=0&&hoyPct<=100?'<div style="position:absolute;left:'+hoyPct+'%;top:0;bottom:0;border-left:2px solid #0A7AFF;transform:translateX(-1px)"></div>'+
+            '<span style="position:absolute;left:'+hoyPct+'%;top:2px;transform:translateX(-50%);background:#0A7AFF;color:#fff;font-size:8px;font-weight:900;padding:1px 6px;border-radius:100px;box-shadow:0 1px 4px rgba(10,122,255,.4)">HOY</span>':'')+
+          '</div>'+
+        '</div>'+
+        rows+
+      '</div>'+
+    '</div></div>';
 }
 
 // ── Render List ───────────────────────────────────────────────────────
@@ -8419,6 +8510,7 @@ function pvtRenderList(){
   const today = _today();
   const {from:pvtFrom,to:pvtTo} = typeof getDateFilter==='function' ? getDateFilter('pvt') : {from:'',to:''};
   const items = APP.state.preventa.slice().filter(p=>{
+    if(p.status==='entregado') return false; // los entregados viven en la pestaña Archivo
     if(!pvtFrom||!pvtTo) return true;
     const pEnd = p.fecha_entrega||'9999-12-31';
     const pStart = p.fecha_ini||'0000-01-01';
@@ -8427,7 +8519,13 @@ function pvtRenderList(){
     const ord={elaboracion:0,por_venir:1,entregado:2};
     return (ord[a.status]||0)-(ord[b.status]||0)||(a.fecha_entrega<b.fecha_entrega?-1:1);
   });
-  if(!items.length){container.innerHTML='<div class="no-data">No hay informes de preventa registrados.</div>';return;}
+  if(!items.length){
+    var _activos=(APP.state.preventa||[]).filter(function(p){return p.status!=='entregado';}).length;
+    container.innerHTML='<div class="no-data">'+(_activos
+      ? 'Sin informes en este período — hay '+_activos+' activo(s) fuera del rango: usa “Este mes” o “Todo” en el filtro de fechas para verlos.'
+      : 'No hay informes de preventa registrados.')+'</div>';
+    return;
+  }
   const cards = items.map(p=>{
     const st = PVT_STATUS[p.status]||PVT_STATUS.por_venir;
     const isOverdue = p.status!=='entregado' && p.fecha_entrega < today;
@@ -8454,6 +8552,14 @@ function pvtRenderList(){
 }
 
 // ── Main render ───────────────────────────────────────────────────────
+function pvtRestoreInforme(id){
+  if(!_canEdit(2)) return;
+  var p=APP.state.preventa.find(function(x){return x.id===id;}); if(!p) return;
+  p.status='elaboracion';
+  if(typeof _syncAll==='function')_syncAll(); else {renderPreventa();saveLS();}
+  try{renderArchive();}catch(e){}
+  toast('↩ Informe devuelto a Preventa','ok');
+}
 function renderPreventa(){
   pvtRenderResources();
   pvtRenderGantt();
@@ -8614,6 +8720,11 @@ function setDateFilter(tab, preset){
     renderPreventa();
   }
 }
+
+// Por defecto Preventa arranca filtrada a ESTA SEMANA (no "Todo")
+setTimeout(function(){
+  try{ var f=document.getElementById('pvt-filter-from'); if(f&&!f.value) setDateFilter('pvt','week'); }catch(e){}
+},300);
 
 function getDateFilter(tab){
   const from = document.getElementById(tab+'-filter-from')?.value || '';
