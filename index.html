@@ -2663,7 +2663,7 @@ header>*{position:relative;z-index:1}
       <div class="sop-title">Soportes y Visitas Free</div>
       <div class="sop-sub">Atenciones bajo petición del KAM · conectadas al calendario de técnicos</div>
     </div>
-    <input type="text" id="sop-search" class="mf-in" placeholder="🔍 Buscar…" style="max-width:220px" oninput="renderSoportes()">
+    <input type="text" id="sop-search" class="search-inp" placeholder="Buscar soporte o visita…" style="max-width:240px" oninput="renderSoportes()">
     <div style="display:flex;gap:8px" class="edit-only">
       <button class="tb-btn" style="background:#C40016;color:#fff" onclick="openSopModal('soporte')">➕ Soporte</button>
       <button class="tb-btn" style="background:#FDE8EA;color:#C40016;border:1px solid #F5B8C0" onclick="openSopModal('visita_free')">➕ Visita Free</button>
@@ -2691,8 +2691,8 @@ header>*{position:relative;z-index:1}
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-    <input type="text" id="arch-search" class="mf-in" placeholder="Buscar proyecto, cliente, ubicación…" style="flex:1;min-width:180px;max-width:320px;padding:7px 11px;font-size:13px;border:1px solid #E2E8F0;border-radius:9px" oninput="renderArchive()">
-    <select id="arch-f-kam" class="mf-in" style="padding:7px 10px;font-size:13px;border:1px solid #E2E8F0;border-radius:9px;background:#fff" onchange="renderArchive()"><option value="">Todos los KAMs</option></select>
+    <input type="text" id="arch-search" class="search-inp" placeholder="Buscar proyecto, cliente, ubicación…" style="flex:1;min-width:180px;max-width:320px" oninput="renderArchive()">
+    <select id="arch-f-kam" class="filter-sel" onchange="renderArchive()"><option value="">Todos los KAMs</option></select>
     <button class="tb-btn btn-outline btn-sm" style="margin-left:auto" onclick="_archExportCSV()" title="Descargar el repositorio filtrado como CSV para Excel">⤓ Exportar CSV</button>
   </div>
   <div class="arch-table-wrap">
@@ -4346,7 +4346,7 @@ function renderAvailMatrix(){
         blocks+='<div class="sc3-block sc3-block-set" style="background:'+c+';color:#fff" '+
           'onclick="_openAsigModal('+t.id+',\''+day.iso+'\','+p.id+',null)" title="'+escH(p.nombre)+(hasConf2?' — CONFLICTO':'')+' — clic para editar horas o clonar">'+
           '<span class="sc3-block-name" style="color:#fff">'+escH(nm)+(hasConf2?'<span style="color:#FCA5A5;font-weight:900"> !</span>':'')+'</span>'+
-          '<span class="sc3-block-time" style="color:rgba(255,255,255,.85)">8:00-18:00</span>'+
+          '<span class="sc3-block-time" style="color:rgba(255,255,255,.85)">'+((p.hora_ini||'08:00').replace(/^0/,''))+'-'+(p.hora_fin||'18:00')+'</span>'+
           '<span class="sc3-block-acts edit-only" onclick="event.stopPropagation()">'+
             '<span class="sc3-act-btn" onclick="_cloneVirtual('+t.id+',\''+day.iso+'\','+p.id+')" title="Clonar a otro día">&#8645;</span>'+
             '<span class="sc3-act-btn" onclick="_unassignTecX(event,'+t.id+','+p.id+',\''+day.iso+'\')" title="Clic: quitar este día · Shift+clic: quitar del proyecto">&#215;</span>'+
@@ -4766,6 +4766,12 @@ function openProjectModal(id=null){
     <div class="mf"><label class="mf-lbl">Días de trabajo</label>
       <input class="mf-inp" type="number" min="1" id="mf-dias" value="${vNum('dias',1)}">
     </div>
+    <div class="mf"><label class="mf-lbl">Horario laboral — inicio</label>
+      <input class="mf-inp" type="time" id="mf-hini" value="${v('hora_ini','08:00')||'08:00'}">
+    </div>
+    <div class="mf"><label class="mf-lbl">Horario laboral — fin</label>
+      <input class="mf-inp" type="time" id="mf-hfin" value="${v('hora_fin','18:00')||'18:00'}">
+    </div>
     
     
     <div class="mf mf-full"><label class="mf-lbl">Técnicos asignados</label>
@@ -4933,6 +4939,8 @@ function saveProjectFromModal(id){
     informe:_g('mf-informe',null)||null,
     fecha_ini:_g('mf-ini'),
     fecha_fin:_g('mf-fin'),
+    hora_ini:_g('mf-hini')||'08:00',
+    hora_fin:_g('mf-hfin')||'18:00',
     dias:parseInt(_g('mf-dias'))||1,
     tecs_req:parseInt(_g('mf-treq'))||1,
     prioridad:parseInt(_g('mf-prio'))||(APP.activeProjects().length+1),
@@ -6508,15 +6516,16 @@ function _openAsigModal(tec_id,fecha,proj_id_preset,asig_id){
       '<div class="mf" style="margin-bottom:10px"><label class="mf-lbl">Proyecto</label>'+
         '<select class="mf-inp" id="asig-proj">'+projOpts+'</select></div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'+
+        (function(){var _pj=proj_id?APP.getProj(proj_id):null;window._asigDefHi=(_pj&&_pj.hora_ini)||'08:00';window._asigDefHf=(_pj&&_pj.hora_fin)||'18:00';return '';})()+
         '<div class="mf"><label class="mf-lbl">Hora inicio</label>'+
           '<select class="mf-inp" id="asig-ini">'+
             (function(){var o='';['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','20:00','22:00'].forEach(function(h){
-              o+='<option value="'+h+'"'+(existing&&existing.hora_ini===h?' selected':'')+(h==='08:00'&&!existing?' selected':'')+'>'+h+'</option>';});return o;})()+'</select>'+
+              o+='<option value="'+h+'"'+(existing&&existing.hora_ini===h?' selected':'')+(h===window._asigDefHi&&!existing?' selected':'')+'>'+h+'</option>';});return o;})()+'</select>'+
         '</div>'+
         '<div class="mf"><label class="mf-lbl">Hora fin</label>'+
           '<select class="mf-inp" id="asig-fin">'+
             (function(){var o='';['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','23:00'].forEach(function(h){
-              o+='<option value="'+h+'"'+(existing&&existing.hora_fin===h?' selected':'')+(h==='18:00'&&!existing?' selected':'')+'>'+h+'</option>';});return o;})()+'</select>'+
+              o+='<option value="'+h+'"'+(existing&&existing.hora_fin===h?' selected':'')+(h===window._asigDefHf&&!existing?' selected':'')+'>'+h+'</option>';});return o;})()+'</select>'+
         '</div>'+
       '</div>'+
     '</div>'+
