@@ -2815,12 +2815,11 @@ header>*{position:relative;z-index:1}
 <script data-cfasync="false" src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script data-cfasync="false">
   const _fbCfg={apiKey:"AIzaSyD-WkS0jxXmn2_2BeFmt3uOnTlnd9xk8P0",authDomain:"calendar-tecnicos-proyectos.firebaseapp.com",projectId:"calendar-tecnicos-proyectos",storageBucket:"calendar-tecnicos-proyectos.firebasestorage.app",messagingSenderId:"688375276050",appId:"1:688375276050:web:0dc70c3c1b6fbd9227aecb"};
-  let _DOC, _DOC_LEGACY;
+  let _DOC;
   try{firebase.initializeApp(_fbCfg);const _db=firebase.firestore();
-    // Documento propio de ESTA versión (GitHub/Vercel) — independiente de la versión antigua de Cloudflare
-    _DOC=_db.collection('gct-ops').doc('state_oficial_v4');
-    _DOC_LEGACY=_db.collection('gct-ops').doc('state');}
-  catch(e){_DOC={get:()=>Promise.reject(new Error('o')),set:()=>Promise.reject(new Error('o')),onSnapshot:()=>()=>{}};_DOC_LEGACY=null;}
+    // Documento EXCLUSIVO de esta versión — sin ninguna conexión con el documento antiguo de Cloudflare
+    _DOC=_db.collection('gct-ops').doc('state_oficial_v5');}
+  catch(e){_DOC={get:()=>Promise.reject(new Error('o')),set:()=>Promise.reject(new Error('o')),onSnapshot:()=>()=>{}};}
 </script>
 <script>var _schedView='week';
 var _schedOffset=0;
@@ -3843,38 +3842,8 @@ function _cleanDemoV1(){
     var MAPC={'#1B2D45':'#0A7AFF','#4B5320':'#10B981','#6B4226':'#F97316','#1A5276':'#8B5CF6','#7B1A2E':'#E11D48','#EC4899':'#E11D48','#3C3D3A':'#06B6D4'};
     Object.values(prfTeams||{}).forEach(function(t){ if(MAPC[t.b]){ t.b=MAPC[t.b]; } });
   }catch(e){}
-  // v2: además garantiza un ejemplo visible de Soporte
-  if(APP.state.demo_clean_v2){ return; }
-  APP.state.demo_clean_v2=true;
-  var act=APP.state.projects.filter(function(p){return !p.archived;});
-  var keepProj=act.find(function(p){return !p.tipo_sop;});
-  var keepSop=act.find(function(p){return !!p.tipo_sop;});
-  var keepIds=[];
-  if(keepProj){ keepProj.nombre='EJEMPLO — '+keepProj.nombre.replace(/^EJEMPLO — /,''); keepIds.push(keepProj.id); }
-  if(keepSop){ keepSop.nombre='EJEMPLO — '+keepSop.nombre.replace(/^EJEMPLO — /,''); keepIds.push(keepSop.id); }
-  else {
-    // Crear ejemplo de Soporte con fechas de esta semana (visible en calendario y timeline)
-    var _h=new Date(); _h.setHours(0,0,0,0);
-    var _f=function(d){return d.toISOString().slice(0,10);};
-    var _ini=_f(_h), _fin=_f(new Date(_h.getTime()+86400000));
-    var _nid=Math.max(0,...APP.state.projects.map(function(x){return x.id||0;}))+1;
-    var _tec=(APP.state.tecnicos[0]||{}).id;
-    APP.state.projects.push({id:_nid,nombre:'EJEMPLO — Soporte BDA Cliente',descripcion:'Atención de soporte bajo petición del KAM',ubicacion:'San Isidro',kam:(APP.state.kams||[])[0]||'KAM',dias:2,tecs_req:1,tecs_ids:_tec?[_tec]:[],fecha_ini:_ini,fecha_fin:_fin,status:'confirmado',prioridad:999,notas:'',valor_est:0,tipo_sop:'soporte'});
-    keepIds.push(_nid);
-  }
-  // Archivo: conservar solo el culminado más reciente como ejemplo
-  var archAll=APP.state.projects.filter(function(p){return p.archived;})
-    .sort(function(a,b){return String(b.fecha_arch||b.fecha_fin||'').localeCompare(String(a.fecha_arch||a.fecha_fin||''));});
-  var keepArch=archAll[0]||null;
-  if(keepArch){ keepArch.nombre='EJEMPLO — '+String(keepArch.nombre).replace(/^EJEMPLO — /,''); }
-  APP.state.projects=APP.state.projects.filter(function(p){return (p.archived&&keepArch&&p.id===keepArch.id)||(!p.archived&&keepIds.indexOf(p.id)>=0);});
-  APP.state.asignaciones=(APP.state.asignaciones||[]).filter(function(a){return !a.proj_id||keepIds.indexOf(a.proj_id)>=0;});
-  if(Array.isArray(APP.state.preventa)&&APP.state.preventa.length>1){
-    APP.state.preventa=[APP.state.preventa[0]];
-    APP.state.preventa[0].nombre='EJEMPLO — '+String(APP.state.preventa[0].nombre||'').replace(/^EJEMPLO — /,'');
-  }
-  if(typeof saveLS==='function') saveLS();
-  console.log('Datos demo limpiados: 1 ejemplo por sección');
+  // La limpieza de datos demo fue RETIRADA definitivamente: borraba datos reales
+  // al abrir el link en un navegador nuevo (el candado demo_clean_v2 no viajaba en _applyData).
 }
 function _seedSkillsV1(){
   try{
@@ -3976,7 +3945,7 @@ function renderProjTimeline(){
   }
   var span=Math.max(1,Math.round((max-min)/D));
   var pct=function(d){return ((new Date(d+'T00:00:00')-min)/D)/span*100;};
-  var hoyPct=((hoy-min)/D)/span*100;
+  var hoyPct=(((hoy-min)/D)+0.5)/span*100; // centrado en la MITAD del día
   // Marcas de meses
   var months=''; var cur=new Date(min.getFullYear(),min.getMonth(),1);
   var MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'];
@@ -4061,8 +4030,8 @@ function renderProjTimeline(){
         '<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:grid;grid-template-columns:230px 1fr;pointer-events:none;z-index:2">'+
           '<div></div>'+
           '<div style="position:relative">'+
-            (hoyPct>=0&&hoyPct<=100?'<div style="position:absolute;left:'+hoyPct+'%;top:0;bottom:0;border-left:2px solid #0A7AFF"></div>'+
-            '<span style="position:absolute;left:'+hoyPct+'%;top:-16px;transform:translateX(-50%);background:#0A7AFF;color:#fff;font-size:9px;font-weight:900;padding:1px 7px;border-radius:100px">HOY</span>':'')+
+            (hoyPct>=0&&hoyPct<=100?'<div style="position:absolute;left:'+hoyPct+'%;top:0;bottom:0;border-left:2px solid #0A7AFF;transform:translateX(-1px)"></div>'+
+            '<span style="position:absolute;left:'+hoyPct+'%;top:2px;transform:translateX(-50%);background:#0A7AFF;color:#fff;font-size:8px;font-weight:900;padding:1px 6px;border-radius:100px;box-shadow:0 1px 4px rgba(10,122,255,.4)">HOY</span>':'')+
           '</div>'+
         '</div>'+
         rows+
@@ -7497,41 +7466,31 @@ function _applyData(d){
     APP.state.asignaciones=d.asignaciones;
     try{ _asigNextId=Math.max(0,...d.asignaciones.map(a=>a.id||0))+1; }catch(e){}
   }
-  if(d.preventa&&Array.isArray(d.preventa)&&d.preventa.length>0){
+  if(Array.isArray(d.preventa)){
     APP.state.preventa=d.preventa;
-    _pvtNextId=Math.max(0,...d.preventa.map(x=>x.id))+1;
+    _pvtNextId=Math.max(0,...d.preventa.map(x=>x.id),0)+1;
   }
   if(d.preventa_team&&Array.isArray(d.preventa_team)&&d.preventa_team.length>0){
     APP.state.preventa_team=d.preventa_team;
   }
-  if(d.projects&&Array.isArray(d.projects)&&d.projects.length>0)APP.state.projects=d.projects;
+  if(Array.isArray(d.projects))APP.state.projects=d.projects;
   if(d.tecnicos&&Array.isArray(d.tecnicos)&&d.tecnicos.length>0)APP.state.tecnicos=d.tecnicos;
   if(d.kams&&Array.isArray(d.kams)&&d.kams.length>0)APP.state.kams=d.kams;
   if(d.nextProjId)APP.state.nextProjId=d.nextProjId;
   if(d.nextTecId)APP.state.nextTecId=d.nextTecId;
+  // Conservar banderas de migración/una-sola-vez que vengan de la nube
+  ['demo_clean_v2','skills_seed_v1'].forEach(function(k){ if(d[k])APP.state[k]=d[k]; });
 }
 
 // Load from Firebase, then start real-time listener
 _setCloud('loading');
 try { _DOC.get()
   .then(doc=>{
-    // Migración única: si el documento nuevo aún no existe, copiar los datos del antiguo y seguir aparte
-    if(!doc.exists && typeof _DOC_LEGACY!=='undefined' && _DOC_LEGACY){
-      return _DOC_LEGACY.get().then(function(old){
-        if(old.exists){
-          var d=old.data();
-          return _DOC.set(d).then(function(){ toast('✓ Datos migrados a la base propia de esta versión','ok'); return {exists:true,data:function(){return d;}}; });
-        }
-        return doc;
-      }).catch(function(){ return doc; });
-    }
-    return doc;
-  })
-  .then(doc=>{
     var cloud=doc.exists?doc.data():null;
     var local=null;
     try{ var raw=localStorage.getItem(_LS_KEY); if(raw) local=JSON.parse(raw); }catch(e){}
-    if(cloud&&local&&local._ts&&(!cloud._ts||local._ts>cloud._ts)){
+    var _rich=function(d){ if(!d)return 0; return (d.projects||[]).length+(d.asignaciones||[]).length+(d.preventa||[]).length+((d.perfiles&&d.perfiles.persons)||[]).length; };
+    if(cloud&&local&&local._appv==='v5'&&local._ts&&(!cloud._ts||local._ts>cloud._ts)&&_rich(local)>=_rich(cloud)){
       // Lo local es más reciente (un guardado a la nube falló): recuperar y re-subir
       _applyData(local);
       _skipSnap=true;
@@ -7571,6 +7530,7 @@ function _buildSaveData(){
   const data=JSON.parse(APP.exportJSON());
   try{ if(typeof prfPersons!=='undefined'&&prfPersons.length) data.perfiles={persons:prfPersons,dims:(prfDims||[]).filter(x=>x.custom),teams:Object.values(prfTeams||{}).filter(x=>x.custom)}; }catch(e){}
   data._ts=Date.now();
+  data._appv='v5'; // sello de versión: impide que copias locales de versiones viejas siembren la nube
   return data;
 }
 function _flushSave(){
